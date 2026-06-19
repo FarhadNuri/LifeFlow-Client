@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { Eye, EyeOff, Camera, ArrowRight } from 'lucide-react'
+import { Navbar } from '@/components/Navbar'
 
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false)
@@ -30,21 +31,19 @@ export default function Register() {
   }
 
   return (
+    <>
+    <Navbar/>
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Header */}
       
 
-      {/* Main Content */}
       <main className="grow flex items-center justify-center py-12 px-4">
         <div className="w-full max-w-md bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
-          {/* Heading */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h1>
             <p className="text-gray-600 text-sm">Join our community of life-savers today.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Avatar Upload */}
             <div className="flex flex-col items-center mb-8">
               <label htmlFor="avatar-upload" className="relative group cursor-pointer">
                 <div className="w-32 h-32 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50 hover:border-red-700 hover:bg-red-50 transition-all group-hover:scale-105">
@@ -72,7 +71,6 @@ export default function Register() {
               <label className="text-sm text-gray-600 mt-3">Upload Profile Picture</label>
             </div>
 
-            {/* Full Name */}
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">Full Name</label>
               <input
@@ -83,7 +81,6 @@ export default function Register() {
               />
             </div>
 
-            {/* Email Address */}
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">Email Address</label>
               <input
@@ -94,7 +91,6 @@ export default function Register() {
               />
             </div>
 
-            {/* Blood Group and District */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">Blood Group</label>
@@ -128,7 +124,6 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Upazila */}
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">Upazila</label>
               <select
@@ -143,7 +138,6 @@ export default function Register() {
               </select>
             </div>
 
-            {/* Password */}
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">Password</label>
               <div className="relative">
@@ -163,7 +157,6 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Confirm Password */}
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">Confirm Password</label>
               <div className="relative">
@@ -183,7 +176,6 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Register Button */}
             <button
               type="submit"
               disabled={isSubmitting}
@@ -202,7 +194,6 @@ export default function Register() {
               )}
             </button>
 
-            {/* Login Link */}
             <div className="text-center">
               <p className="text-sm text-gray-600">
                 Already have an account?{' '}
@@ -216,5 +207,6 @@ export default function Register() {
       </main>
 
     </div>
+    </>
   )
 }
