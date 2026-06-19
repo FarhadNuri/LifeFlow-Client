@@ -4,7 +4,7 @@ import { Droplet, Mail, Lock, Building2 } from 'lucide-react'
 export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center py-12 px-4">
-      {/* Logo and Tagline */}
+      
       <div className="text-center mb-12">
         <div className="flex items-center justify-center gap-2 mb-4">
           <Droplet className="w-10 h-10 text-red-700" fill="currentColor" />
@@ -13,13 +13,13 @@ export default function LoginPage() {
         <p className="text-gray-600 text-lg">Connecting donors to lives in need.</p>
       </div>
 
-      {/* Login Form Card */}
+      
       <div className="w-full max-w-md bg-white rounded-2xl border border-gray-200 p-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back</h2>
         <p className="text-gray-600 mb-8">Please enter your details to sign in.</p>
 
         <form className="space-y-6">
-          {/* Email Field */}
+          
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-2">Email Address</label>
             <div className="relative">
@@ -32,7 +32,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Password Field */}
+          
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="block text-sm font-medium text-gray-900">Password</label>
@@ -50,7 +50,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Login Button */}
+          
           <button
             type="submit"
             className="cursor-pointer w-full bg-red-700 text-white py-3 rounded-lg font-semibold hover:bg-red-800 transition flex items-center justify-center gap-2"
@@ -59,7 +59,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Divider */}
+        
         <div className="relative my-8">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-200"></div>
@@ -69,13 +69,13 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Hospital Staff Login */}
+        
         <Link href="#" className="w-full border-2 border-gray-200 text-gray-900 py-3 rounded-lg font-semibold hover:border-gray-300 hover:bg-gray-50 transition flex items-center justify-center gap-3">
           <Building2 className="w-5 h-5" />
           Hospital Staff Login
         </Link>
 
-        {/* Sign Up Link */}
+        
         <p className="text-center mt-8 text-gray-600">
           New here?{' '}
           <Link href="/register" className="text-red-700 font-semibold hover:underline">
@@ -83,7 +83,7 @@ export default function LoginPage() {
           </Link>
         </p>
 
-        {/* Footer Links */}
+        
         <div className="flex items-center justify-center gap-6 mt-8 pt-8 border-t border-gray-200 text-sm text-gray-600">
           <Link href="#" className="hover:text-gray-900">Privacy Policy</Link>
           <Link href="#" className="hover:text-gray-900">Terms of Service</Link>
