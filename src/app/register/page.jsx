@@ -34,31 +34,30 @@ export default function Register() {
     <>
     <Navbar/>
     <div className="min-h-screen bg-white flex flex-col">
-      
-
-      <main className="grow flex items-center justify-center py-12 px-4">
-        <div className="w-full max-w-md bg-white rounded-2xl border border-gray-200 p-8 shadow-sm">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h1>
-            <p className="text-gray-600 text-sm">Join our community of life-savers today.</p>
+      <main className="grow flex items-center justify-center py-8 sm:py-12 px-4 sm:px-6">
+        <div className="w-full max-w-md bg-white rounded-2xl border border-gray-200 p-5 sm:p-8 shadow-sm">
+          <div className="text-center mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Create your account</h1>
+            <p className="text-gray-600 text-xs sm:text-sm">Join our community of life-savers today.</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="flex flex-col items-center mb-8">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            {/* Avatar Upload */}
+            <div className="flex flex-col items-center mb-6 sm:mb-8">
               <label htmlFor="avatar-upload" className="relative group cursor-pointer">
-                <div className="w-32 h-32 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50 hover:border-red-700 hover:bg-red-50 transition-all group-hover:scale-105">
+                <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50 hover:border-red-700 hover:bg-red-50 transition-all group-hover:scale-105">
                   {previewImg ? (
                     <img src={previewImg} alt="Profile" className="w-full h-full object-cover rounded-full" />
                   ) : (
-                    <Camera className="w-8 h-8 text-gray-400 group-hover:text-red-700" />
+                    <Camera className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 group-hover:text-red-700" />
                   )}
                 </div>
                 <button
                   type="button"
-                  className="absolute bottom-0 right-0 bg-red-700 text-white p-2 rounded-full shadow-md hover:bg-red-800 transition-transform hover:scale-110"
+                  className="absolute bottom-0 right-0 bg-red-700 text-white p-1.5 sm:p-2 rounded-full shadow-md hover:bg-red-800 transition-transform hover:scale-110"
                   onClick={() => document.getElementById('avatar-upload')?.click()}
                 >
-                  <Camera className="w-4 h-4" />
+                  <Camera className="w-3 h-3 sm:w-4 sm:h-4" />
                 </button>
               </label>
               <input
@@ -68,35 +67,38 @@ export default function Register() {
                 onChange={handleImageUpload}
                 className="hidden"
               />
-              <label className="text-sm text-gray-600 mt-3">Upload Profile Picture</label>
+              <label className="text-xs sm:text-sm text-gray-600 mt-2 sm:mt-3">Upload Profile Picture</label>
             </div>
 
+            {/* Full Name */}
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">Full Name</label>
               <input
                 type="text"
                 placeholder="John Doe"
                 required
-                className="w-full h-11 px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm placeholder:text-gray-400"
+                className="w-full h-10 sm:h-11 px-3 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm placeholder:text-gray-400"
               />
             </div>
 
+            {/* Email Address */}
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">Email Address</label>
               <input
                 type="email"
                 placeholder="name@example.com"
                 required
-                className="w-full h-11 px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm placeholder:text-gray-400"
+                className="w-full h-10 sm:h-11 px-3 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm placeholder:text-gray-400"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            {/* Blood Group and District */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">Blood Group</label>
                 <select
                   required
-                  className="w-full h-11 px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm text-gray-400"
+                  className="w-full h-10 sm:h-11 px-2 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm text-gray-400"
                 >
                   <option value="">Select</option>
                   <option value="A+">A+</option>
@@ -113,7 +115,7 @@ export default function Register() {
                 <label className="block text-sm font-medium text-gray-900 mb-2">District</label>
                 <select
                   required
-                  className="w-full h-11 px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm text-gray-400"
+                  className="w-full h-10 sm:h-11 px-2 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm text-gray-400"
                 >
                   <option value="">Select</option>
                   <option value="dhaka">Dhaka</option>
@@ -124,11 +126,12 @@ export default function Register() {
               </div>
             </div>
 
+            {/* Upazila */}
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">Upazila</label>
               <select
                 required
-                className="w-full h-11 px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm text-gray-400"
+                className="w-full h-10 sm:h-11 px-3 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm text-gray-400"
               >
                 <option value="">Select Upazila</option>
                 <option value="gulshan">Gulshan</option>
@@ -138,6 +141,7 @@ export default function Register() {
               </select>
             </div>
 
+            {/* Password */}
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">Password</label>
               <div className="relative">
@@ -145,7 +149,7 @@ export default function Register() {
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   required
-                  className="w-full h-11 px-4 pr-10 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm placeholder:text-gray-400"
+                  className="w-full h-10 sm:h-11 px-3 sm:px-4 pr-10 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm placeholder:text-gray-400"
                 />
                 <button
                   type="button"
@@ -157,6 +161,7 @@ export default function Register() {
               </div>
             </div>
 
+            {/* Confirm Password */}
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">Confirm Password</label>
               <div className="relative">
@@ -164,7 +169,7 @@ export default function Register() {
                   type={showConfirm ? 'text' : 'password'}
                   placeholder="••••••••"
                   required
-                  className="w-full h-11 px-4 pr-10 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm placeholder:text-gray-400"
+                  className="w-full h-10 sm:h-11 px-3 sm:px-4 pr-10 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm placeholder:text-gray-400"
                 />
                 <button
                   type="button"
@@ -176,10 +181,11 @@ export default function Register() {
               </div>
             </div>
 
+            {/* Register Button */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-11 bg-red-700 text-white rounded-lg font-bold text-sm uppercase tracking-wide hover:bg-red-800 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-80"
+              className="w-full h-10 sm:h-11 bg-red-700 text-white rounded-lg font-bold text-sm uppercase tracking-wide hover:bg-red-800 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-80"
             >
               {isSubmitting ? (
                 <>
@@ -194,8 +200,9 @@ export default function Register() {
               )}
             </button>
 
+            {/* Login Link */}
             <div className="text-center">
-              <p className="text-sm text-gray-600">
+              <p className="text-xs sm:text-sm text-gray-600">
                 Already have an account?{' '}
                 <Link href="/login" className="text-red-700 font-bold hover:underline">
                   Login
@@ -205,7 +212,6 @@ export default function Register() {
           </form>
         </div>
       </main>
-
     </div>
     </>
   )
