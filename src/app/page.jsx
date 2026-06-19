@@ -1,11 +1,10 @@
 import Link from 'next/link'
 import { Droplet, Users, Heart, AlertCircle, CheckCircle2, Shield, MessageCircle } from 'lucide-react'
-import { Navbar } from '@/components/Navbar'
+
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
 
       <section className="max-w-7xl mx-auto px-4 py-20">
         <div className="grid grid-cols-2 gap-12 items-center">

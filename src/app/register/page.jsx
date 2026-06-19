@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { Eye, EyeOff, Camera, ArrowRight } from 'lucide-react'
-import { Navbar } from '@/components/Navbar'
 
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false)
@@ -31,8 +30,6 @@ export default function Register() {
   }
 
   return (
-    <>
-    <Navbar/>
     <div className="min-h-screen bg-white flex flex-col">
       <main className="grow flex items-center justify-center py-8 sm:py-12 px-4 sm:px-6">
         <div className="w-full max-w-md bg-white rounded-2xl border border-gray-200 p-5 sm:p-8 shadow-sm">
@@ -213,6 +210,5 @@ export default function Register() {
         </div>
       </main>
     </div>
-    </>
   )
 }

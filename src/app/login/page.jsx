@@ -1,11 +1,8 @@
 import Link from 'next/link'
 import { Droplet, Mail, Lock, Building2 } from 'lucide-react'
-import { Navbar } from '@/components/Navbar'
 
 export default function LoginPage() {
   return (
-    <>
-    <Navbar/>
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center py-4 sm:py-8 px-4 sm:px-6">
       
       <div className="text-center mb-6 sm:mb-8">
@@ -94,6 +91,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-    </>
   )
 }
