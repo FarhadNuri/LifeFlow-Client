@@ -1,8 +1,10 @@
 import Link from 'next/link'
 import { Droplet, Mail, Lock, Building2 } from 'lucide-react'
 
+
 export default function LoginPage() {
   return (
+
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center py-4 sm:py-8 px-4 sm:px-6">
       
       <div className="text-center mb-6 sm:mb-8">
@@ -84,12 +86,10 @@ export default function LoginPage() {
         </p>
 
         
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gray-200 text-xs sm:text-sm text-gray-600">
-          <Link href="#" className="hover:text-gray-900">Privacy Policy</Link>
-          <Link href="#" className="hover:text-gray-900">Terms of Service</Link>
-          <Link href="#" className="hover:text-gray-900">Contact Support</Link>
-        </div>
+
       </div>
+    
     </div>
+
   )
 }

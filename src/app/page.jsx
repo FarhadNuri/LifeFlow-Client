@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import { Droplet, Users, Heart, AlertCircle, CheckCircle2, Shield, MessageCircle } from 'lucide-react'
-
+import { Footer } from '@/components/Footer'
 
 export default function Home() {
   return (
+    <>
     <div className="min-h-screen bg-white">
 
       <section className="max-w-7xl mx-auto px-4 py-20">
@@ -206,5 +207,7 @@ export default function Home() {
       </section>
 
     </div>
+    <Footer/>
+    </>
   )
 }
