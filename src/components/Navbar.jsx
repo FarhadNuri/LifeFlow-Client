@@ -33,6 +33,12 @@ export function Navbar() {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-8">
           <Link
+            href="/search"
+            className={isActive('/search') ? "text-red-700 font-bold border-b-2 border-red-700 pb-1" : "text-gray-600 hover:text-red-700 font-medium transition"}
+          >
+            Search Donors
+          </Link>
+          <Link
             href="/requests"
             className={isActive('/requests') ? "text-red-700 font-bold border-b-2 border-red-700 pb-1" : "text-gray-600 hover:text-red-700 font-medium transition"}
           >
@@ -72,6 +78,13 @@ export function Navbar() {
       {isMenuOpen && (
         <nav className="md:hidden bg-white border-t border-gray-200 shadow-lg">
           <div className="flex flex-col py-4 px-4 space-y-4">
+            <Link
+              href="/search"
+              onClick={closeMenu}
+              className={isActive('/search') ? "text-red-700 font-bold py-2 border-l-4 border-red-700 pl-4" : "text-gray-600 hover:text-red-700 font-medium py-2 pl-4 transition"}
+            >
+              Search Donors
+            </Link>
             <Link
               href="/requests"
               onClick={closeMenu}
