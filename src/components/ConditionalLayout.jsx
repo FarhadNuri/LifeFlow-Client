@@ -7,8 +7,10 @@ import { Footer } from './Footer'
 export function ConditionalLayout({ children }) {
   const pathname = usePathname()
   const isAdminRoute = pathname?.startsWith('/admin')
+  const isDonorRoute = pathname?.startsWith('/donor')
 
-  if (isAdminRoute) {
+  // Don't show Navbar/Footer on admin or donor routes
+  if (isAdminRoute || isDonorRoute) {
     return <>{children}</>
   }
 
