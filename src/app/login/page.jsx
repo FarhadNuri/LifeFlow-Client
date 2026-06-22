@@ -1,10 +1,37 @@
-import Link from 'next/link'
-import { Droplet, Mail, Lock, Building2 } from 'lucide-react'
+'use client'
 
+import { useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { Droplet, Mail, Lock, Building2 } from 'lucide-react'
+import { useAuth } from '@/context/AuthContext'
 
 export default function LoginPage() {
-  return (
+  const router = useRouter()
+  const { login } = useAuth()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+
+    const formData = new FormData(e.currentTarget)
+    const email = formData.get('email')
+    const password = formData.get('password')
+
+    const result = await login(email, password)
+
+    if (result.success) {
+      router.push('/donor') // Redirect to donor dashboard after login
+    } else {
+      setError(result.error || 'Login failed. Please try again.')
+      setLoading(false)
+    }
+  }
+
+  return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center py-4 sm:py-8 px-4 sm:px-6">
       
       <div className="text-center mb-6 sm:mb-8">
@@ -20,14 +47,22 @@ export default function LoginPage() {
         <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Welcome back</h2>
         <p className="text-gray-600 mb-6 sm:mb-8 text-sm sm:text-base">Please enter your details to sign in.</p>
 
-        <form className="space-y-5 sm:space-y-6">
+        {error && (
+          <div className="mb-4 p-3 rounded-lg text-sm bg-red-50 text-red-600 border border-red-200">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6">
           
           <div>
             <label className="block text-sm font-medium text-gray-900 mb-2">Email Address</label>
             <div className="relative">
               <Mail className="absolute left-3 top-3.5 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
               <input
+                name="email"
                 type="email"
+                required
                 placeholder="name@example.com"
                 className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent placeholder:text-gray-400 text-sm sm:text-base"
               />
@@ -45,7 +80,9 @@ export default function LoginPage() {
             <div className="relative">
               <Lock className="absolute left-3 top-3.5 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
               <input
+                name="password"
                 type="password"
+                required
                 placeholder="•••••••••"
                 className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent placeholder:text-gray-400 text-sm sm:text-base"
               />
@@ -55,9 +92,10 @@ export default function LoginPage() {
           
           <button
             type="submit"
-            className="cursor-pointer w-full bg-red-700 text-white py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-red-800 transition flex items-center justify-center gap-2 text-sm sm:text-base"
+            disabled={loading}
+            className="cursor-pointer w-full bg-red-700 text-white py-2.5 sm:py-3 rounded-lg font-semibold hover:bg-red-800 transition flex items-center justify-center gap-2 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Login <span>→</span>
+            {loading ? 'Logging in...' : 'Login'} <span>→</span>
           </button>
         </form>
 
@@ -72,7 +110,7 @@ export default function LoginPage() {
         </div>
 
         
-        <Link href="#" className="w-full border-2 border-gray-200 text-gray-900 py-2.5 sm:py-3 rounded-lg font-semibold hover:border-gray-300 hover:bg-gray-50 transition flex items-center justify-center gap-3 text-sm sm:text-base">
+        <Link href="/admin" className="w-full border-2 border-gray-200 text-gray-900 py-2.5 sm:py-3 rounded-lg font-semibold hover:border-gray-300 hover:bg-gray-50 transition flex items-center justify-center gap-3 text-sm sm:text-base">
           <Building2 className="w-4 h-4 sm:w-5 sm:h-5" />
           Hospital Staff Login
         </Link>
@@ -84,12 +122,8 @@ export default function LoginPage() {
             Create an account
           </Link>
         </p>
-
-        
-
       </div>
     
     </div>
-
   )
 }

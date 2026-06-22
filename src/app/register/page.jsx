@@ -2,13 +2,19 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Camera, ArrowRight } from 'lucide-react'
+import { useAuth } from '@/context/AuthContext'
 
 export default function Register() {
+  const router = useRouter()
+  const { register } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [previewImg, setPreviewImg] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const [passwordError, setPasswordError] = useState('')
 
   const handleImageUpload = (e) => {
     const file = e.target.files?.[0]
@@ -21,12 +27,58 @@ export default function Register() {
     }
   }
 
-  const handleSubmit = (e) => {
+  const validatePassword = (password) => {
+    if (password.length < 6) {
+      return 'Password must be at least 6 characters long'
+    }
+    return ''
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
-    setTimeout(() => {
+    setError('')
+    setPasswordError('')
+
+    const formData = new FormData(e.currentTarget)
+    const name = formData.get('name')
+    const email = formData.get('email')
+    const password = formData.get('password')
+    const confirmPassword = formData.get('confirmPassword')
+    const bloodGroup = formData.get('bloodGroup')
+    const district = formData.get('district')
+    const upazila = formData.get('upazila')
+
+    // Validate password
+    const passError = validatePassword(password)
+    if (passError) {
+      setPasswordError(passError)
       setIsSubmitting(false)
-    }, 1500)
+      return
+    }
+
+    // Check if passwords match
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      setIsSubmitting(false)
+      return
+    }
+
+    const result = await register({
+      name,
+      email,
+      password,
+      bloodGroup,
+      district,
+      upazila
+    })
+
+    if (result.success) {
+      router.push('/donor') // Redirect to donor dashboard after registration
+    } else {
+      setError(result.error || 'Registration failed. Please try again.')
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -37,6 +89,12 @@ export default function Register() {
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Create your account</h1>
             <p className="text-gray-600 text-xs sm:text-sm">Join our community of life-savers today.</p>
           </div>
+
+          {error && (
+            <div className="mb-4 p-3 rounded-lg text-sm bg-red-50 text-red-600 border border-red-200">
+              {error}
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Avatar Upload */}
@@ -71,6 +129,7 @@ export default function Register() {
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">Full Name</label>
               <input
+                name="name"
                 type="text"
                 placeholder="John Doe"
                 required
@@ -82,6 +141,7 @@ export default function Register() {
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">Email Address</label>
               <input
+                name="email"
                 type="email"
                 placeholder="name@example.com"
                 required
@@ -94,6 +154,7 @@ export default function Register() {
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">Blood Group</label>
                 <select
+                  name="bloodGroup"
                   required
                   className="w-full h-10 sm:h-11 px-2 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm text-gray-400"
                 >
@@ -111,6 +172,7 @@ export default function Register() {
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">District</label>
                 <select
+                  name="district"
                   required
                   className="w-full h-10 sm:h-11 px-2 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm text-gray-400"
                 >
@@ -127,6 +189,7 @@ export default function Register() {
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">Upazila</label>
               <select
+                name="upazila"
                 required
                 className="w-full h-10 sm:h-11 px-3 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm text-gray-400"
               >
@@ -143,6 +206,7 @@ export default function Register() {
               <label className="block text-sm font-medium text-gray-900 mb-2">Password</label>
               <div className="relative">
                 <input
+                  name="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   required
@@ -156,6 +220,9 @@ export default function Register() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {passwordError && (
+                <p className="text-xs text-red-600 mt-1">{passwordError}</p>
+              )}
             </div>
 
             {/* Confirm Password */}
@@ -163,6 +230,7 @@ export default function Register() {
               <label className="block text-sm font-medium text-gray-900 mb-2">Confirm Password</label>
               <div className="relative">
                 <input
+                  name="confirmPassword"
                   type={showConfirm ? 'text' : 'password'}
                   placeholder="••••••••"
                   required
@@ -182,7 +250,7 @@ export default function Register() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full h-10 sm:h-11 bg-red-700 text-white rounded-lg font-bold text-sm uppercase tracking-wide hover:bg-red-800 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-80"
+              className="w-full h-10 sm:h-11 bg-red-700 text-white rounded-lg font-bold text-sm uppercase tracking-wide hover:bg-red-800 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-80 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>
@@ -210,6 +278,5 @@ export default function Register() {
         </div>
       </main>
     </div>
-
   )
 }
