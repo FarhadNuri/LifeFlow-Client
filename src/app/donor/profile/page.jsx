@@ -75,10 +75,7 @@ export default function DonorProfilePage() {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="px-8 py-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">Account Settings</h1>
-          <Link href="#" className="bg-red-700 text-white px-6 py-2 rounded-md font-medium hover:bg-red-800 transition flex items-center gap-2">
-            <span>✎</span>
-            Edit Profile
-          </Link>
+
         </div>
       </header>
 

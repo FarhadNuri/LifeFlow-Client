@@ -44,6 +44,7 @@ export async function POST(request) {
     const token = jwt.sign(
       { 
         userId: user._id.toString(),
+        name: user.name,
         email: user.email,
         role: user.role || 'donor'
       },

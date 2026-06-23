@@ -3,8 +3,14 @@
 import Link from 'next/link'
 import { Droplet, AlertCircle, Send } from 'lucide-react'
 import { useState } from 'react'
+import { useAuth } from '@/context/AuthContext'
+import { useRouter } from 'next/navigation'
 
 export default function CreateRequest() {
+  const { user } = useAuth()
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const [formData, setFormData] = useState({
     bloodGroup: '',
     district: '',
@@ -14,9 +20,33 @@ export default function CreateRequest() {
     message: '',
   })
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    alert('Blood donation request has been successfully broadcasted!')
+    setLoading(true)
+    setError('')
+
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('http://localhost:5000/donor/requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(formData)
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to create request')
+      }
+
+      alert('Blood donation request has been successfully broadcasted!')
+      router.push('/donor/my-requests')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -38,8 +68,8 @@ export default function CreateRequest() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Info Panel */}
           <div className="lg:col-span-1">
-            <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm h-full flex flex-col justify-end">
-              <div className="absolute inset-0 opacity-5 bg-cover bg-center rounded-xl" style={{
+            <div className="relative bg-white border border-gray-200 rounded-xl p-8 shadow-sm h-full flex flex-col justify-end overflow-hidden">
+              <div className="absolute inset-0 opacity-5 bg-cover bg-center" style={{
                 backgroundImage: 'url(https://images.unsplash.com/photo-1576091160550-112173f7f869?w=400&h=400&fit=crop)',
               }}></div>
               <div className="relative z-10">
@@ -58,19 +88,30 @@ export default function CreateRequest() {
               <form onSubmit={handleSubmit} className="space-y-8">
                 {/* Requester Information Section */}
                 <div className="space-y-4">
+                  {error && (
+                    <div className="p-3 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm mb-4">
+                      {error}
+                    </div>
+                  )}
                   <h4 className="text-xs font-bold text-red-700 uppercase tracking-widest">Requester Information</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex flex-col gap-2">
                       <label className="text-sm text-gray-600 font-medium">Requester Name</label>
-                      <div className="bg-gray-100 border border-gray-300 rounded-lg px-4 py-3 text-gray-600 text-sm cursor-not-allowed">
-                        Sarah J. Mitchell
-                      </div>
+                      <input
+                        type="text"
+                        readOnly
+                        value={user?.name || 'Loading...'}
+                        className="bg-gray-100 border border-gray-300 rounded-lg px-4 py-3 text-gray-600 text-sm cursor-not-allowed focus:outline-none"
+                      />
                     </div>
                     <div className="flex flex-col gap-2">
                       <label className="text-sm text-gray-600 font-medium">Email Address</label>
-                      <div className="bg-gray-100 border border-gray-300 rounded-lg px-4 py-3 text-gray-600 text-sm cursor-not-allowed">
-                        sarah.mitchell@example.com
-                      </div>
+                      <input
+                        type="email"
+                        readOnly
+                        value={user?.email || 'Loading...'}
+                        className="bg-gray-100 border border-gray-300 rounded-lg px-4 py-3 text-gray-600 text-sm cursor-not-allowed focus:outline-none"
+                      />
                     </div>
                   </div>
                 </div>
@@ -87,7 +128,8 @@ export default function CreateRequest() {
                         id="bloodGroup"
                         value={formData.bloodGroup}
                         onChange={(e) => setFormData({ ...formData, bloodGroup: e.target.value })}
-                        className="border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent"
+                        required
+                        className="border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent text-gray-900 bg-white"
                       >
                         <option value="">Select Group</option>
                         <option value="A+">A+</option>
@@ -106,7 +148,8 @@ export default function CreateRequest() {
                         id="district"
                         value={formData.district}
                         onChange={(e) => setFormData({ ...formData, district: e.target.value })}
-                        className="border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent"
+                        required
+                        className="border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent text-gray-900 bg-white"
                       >
                         <option value="">Select District</option>
                         <option value="dhaka">Dhaka</option>
@@ -121,7 +164,8 @@ export default function CreateRequest() {
                         id="upazila"
                         value={formData.upazila}
                         onChange={(e) => setFormData({ ...formData, upazila: e.target.value })}
-                        className="border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent"
+                        required
+                        className="border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent text-gray-900 bg-white"
                       >
                         <option value="">Select Upazila</option>
                         <option value="uttara">Uttara</option>
@@ -141,7 +185,8 @@ export default function CreateRequest() {
                       type="date"
                       value={formData.date}
                       onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      className="border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent"
+                      required
+                      className="border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent text-gray-900 bg-white"
                     />
                   </div>
                   <div className="flex flex-col gap-2">
@@ -151,7 +196,8 @@ export default function CreateRequest() {
                       type="time"
                       value={formData.time}
                       onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                      className="border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent"
+                      required
+                      className="border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent text-gray-900 bg-white"
                     />
                   </div>
                 </div>
@@ -163,9 +209,10 @@ export default function CreateRequest() {
                     id="message"
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    required
                     placeholder="e.g. Please bring an NID card, patient is at City Hospital Bed 402..."
                     rows={4}
-                    className="border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent resize-none"
+                    className="border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent resize-none text-gray-900 bg-white"
                   ></textarea>
                 </div>
 
@@ -173,10 +220,17 @@ export default function CreateRequest() {
                 <div className="pt-4">
                   <button
                     type="submit"
-                    className="flex items-center gap-2 bg-red-700 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-800 transition active:scale-95"
+                    disabled={loading}
+                    className="flex items-center gap-2 bg-red-700 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-800 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Send className="w-4 h-4" />
-                    Submit Request
+                    {loading ? (
+                      <span className="animate-pulse">Submitting...</span>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        Submit Request
+                      </>
+                    )}
                   </button>
                 </div>
               </form>

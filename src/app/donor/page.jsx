@@ -1,47 +1,66 @@
 'use client';
 
-import { useState } from 'react';
-import { Heart, Share2, Plus, Search, Filter, Eye, Edit, Trash2, ArrowRight } from 'lucide-react';
-
-const recentRequests = [
-  {
-    id: 1,
-    recipient: 'Sarah Johnson',
-    initials: 'SJ',
-    location: 'City General Hospital',
-    date: 'Oct 12, 2024',
-    time: '10:30 AM',
-    bloodType: 'A+',
-    status: 'Completed',
-    statusColor: 'bg-green-100 text-green-700',
-  },
-  {
-    id: 2,
-    recipient: 'Mark Wilson',
-    initials: 'MW',
-    location: 'St. Jude Medical Center',
-    date: 'Oct 15, 2024',
-    time: '02:15 PM',
-    bloodType: 'B-',
-    status: 'Pending',
-    statusColor: 'bg-amber-100 text-amber-700',
-  },
-  {
-    id: 3,
-    recipient: 'Robert Chen',
-    initials: 'RC',
-    location: 'Metro Clinic East',
-    date: 'Oct 18, 2024',
-    time: '09:00 AM',
-    bloodType: 'O-',
-    status: 'Urgent',
-    statusColor: 'bg-red-100 text-red-700',
-  },
-];
+import { useState, useEffect } from 'react';
+import { Heart, Share2, Plus, Search, Filter, Eye, ArrowRight } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import Link from 'next/link';
 
 const DonorDashboard = () => {
+  const { user } = useAuth();
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [viewModalData, setViewModalData] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const [personalRequestsCount, setPersonalRequestsCount] = useState(0);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch global requests
+        const globalRes = await fetch(`http://localhost:5000/requests`);
+        if (globalRes.ok) {
+          const globalData = await globalRes.json();
+          setRequests(globalData);
+        }
+
+        // Fetch personal requests count if user is logged in
+        if (user?.id) {
+          const token = localStorage.getItem('token');
+          const personalRes = await fetch(`http://localhost:5000/donor/my-requests/${user.id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (personalRes.ok) {
+            const personalData = await personalRes.json();
+            setPersonalRequestsCount(personalData.length);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [user]);
+
+  // Helper to format initials
+  const getInitials = (name) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+  };
+
+  // Helper for status colors
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Pending': return 'bg-amber-100 text-amber-700';
+      case 'In Progress': return 'bg-blue-100 text-blue-700';
+      case 'Completed': return 'bg-green-100 text-green-700';
+      case 'Cancelled': return 'bg-red-100 text-red-700';
+      default: return 'bg-slate-100 text-slate-700';
+    }
+  };
 
   return (
       <main className="w-full">
@@ -67,10 +86,10 @@ const DonorDashboard = () => {
           <header className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-8">
             <div>
               <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
-                Welcome back, John Doe!
+                Welcome back, {user?.name || 'Donor'}!
               </h2>
               <p className="text-slate-600">
-                Your contributions have impacted 12 lives this year.
+                Check out the latest community requests below.
               </p>
             </div>
             <div className="flex gap-3">
@@ -78,10 +97,10 @@ const DonorDashboard = () => {
                 <Share2 className="w-4 h-4" />
                 Share Portal
               </button>
-              <button className="px-4 py-2 bg-red-700 text-white rounded-lg font-semibold hover:bg-red-800 transition-colors flex items-center gap-2 text-sm md:text-base">
+              <Link href="/donor/create-request" className="px-4 py-2 bg-red-700 text-white rounded-lg font-semibold hover:bg-red-800 transition-colors flex items-center gap-2 text-sm md:text-base">
                 <Plus className="w-4 h-4" />
                 New Request
-              </button>
+              </Link>
             </div>
           </header>
 
@@ -93,8 +112,8 @@ const DonorDashboard = () => {
                 Total Personal Requests
               </h3>
               <div className="flex items-baseline gap-2 mb-6">
-                <span className="text-5xl font-bold text-red-700">08</span>
-                <span className="text-sm font-semibold text-orange-600">+2 this month</span>
+                <span className="text-5xl font-bold text-red-700">{personalRequestsCount.toString().padStart(2, '0')}</span>
+                <span className="text-sm font-semibold text-orange-600">Requests made</span>
               </div>
               <div className="space-y-3">
                 <div className="flex items-center gap-4">
@@ -157,23 +176,36 @@ const DonorDashboard = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {recentRequests.map((request) => (
-                    <tr
-                      key={request.id}
+                  {loading ? (
+                    <tr>
+                      <td colSpan="6" className="px-6 py-8 text-center text-slate-500">
+                        Loading requests...
+                      </td>
+                    </tr>
+                  ) : requests.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="px-6 py-8 text-center text-slate-500">
+                        There are no active requests right now.
+                      </td>
+                    </tr>
+                  ) : (
+                    requests.map((request) => (
+                      <tr
+                        key={request._id}
                       className="hover:bg-slate-50 transition-colors"
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center font-bold text-red-700 text-xs">
-                            {request.initials}
+                            {getInitials(request.donorName)}
                           </div>
                           <span className="font-semibold text-slate-900">
-                            {request.recipient}
+                            {request.donorName || 'Unknown'}
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-slate-600">
-                        {request.location}
+                      <td className="px-6 py-4 text-slate-600 capitalize">
+                        {request.upazila}, {request.district}
                       </td>
                       <td className="px-6 py-4 text-slate-600">
                         <div className="flex flex-col">
@@ -183,12 +215,12 @@ const DonorDashboard = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-red-700 text-white font-bold text-xs ring-2 ring-red-200">
-                          {request.bloodType}
+                          {request.bloodGroup || 'N/A'}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`px-3 py-1 rounded-full font-semibold text-xs ${request.statusColor}`}
+                          className={`px-3 py-1 rounded-full font-semibold text-xs ${getStatusColor(request.status)}`}
                         >
                           {request.status}
                         </span>
@@ -196,27 +228,17 @@ const DonorDashboard = () => {
                       <td className="px-6 py-4 text-right">
                         <div className="flex justify-end gap-2">
                           <button
+                            onClick={() => setViewModalData(request)}
                             title="View"
                             className="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
-                          <button
-                            title="Edit"
-                            className="p-2 hover:bg-slate-100 rounded-lg text-slate-600 transition-colors"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                          <button
-                            title="Delete"
-                            className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
                         </div>
                       </td>
                     </tr>
-                  ))}
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -248,6 +270,29 @@ const DonorDashboard = () => {
             </div>
           </footer>
         </div>
+
+        {/* View Modal */}
+        {viewModalData && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-lg">
+              <h3 className="text-xl font-bold text-slate-900 mb-4">Request Details</h3>
+              <div className="space-y-3 text-sm">
+                <p className="text-slate-900"><span className="font-semibold text-slate-700">Blood Group:</span> {viewModalData.bloodGroup}</p>
+                <p className="text-slate-900"><span className="font-semibold text-slate-700">Location:</span> <span className="capitalize">{viewModalData.upazila}, {viewModalData.district}</span></p>
+                <p className="text-slate-900"><span className="font-semibold text-slate-700">Date:</span> {viewModalData.date}</p>
+                <p className="text-slate-900"><span className="font-semibold text-slate-700">Time:</span> {viewModalData.time}</p>
+                <p className="text-slate-900"><span className="font-semibold text-slate-700">Status:</span> {viewModalData.status}</p>
+                <div>
+                  <span className="font-semibold text-slate-700 block mb-1">Message:</span>
+                  <p className="bg-slate-50 p-3 rounded-lg text-slate-900 border border-slate-200">{viewModalData.message || 'No message provided.'}</p>
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end">
+                <button onClick={() => setViewModalData(null)} className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg font-medium transition-colors">Close</button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
   );
 };
