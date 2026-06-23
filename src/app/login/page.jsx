@@ -24,7 +24,11 @@ export default function LoginPage() {
     const result = await login(email, password)
 
     if (result.success) {
-      router.push('/donor') // Redirect to donor dashboard after login
+      if (result.user?.role === 'admin') {
+        router.push('/admin') // Redirect to admin dashboard
+      } else {
+        router.push('/donor') // Redirect to donor dashboard
+      }
     } else {
       setError(result.error || 'Login failed. Please try again.')
       setLoading(false)
@@ -64,7 +68,7 @@ export default function LoginPage() {
                 type="email"
                 required
                 placeholder="name@example.com"
-                className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent placeholder:text-gray-400 text-sm sm:text-base"
+                className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent placeholder:text-gray-400 text-sm sm:text-base text-gray-900"
               />
             </div>
           </div>
@@ -84,7 +88,7 @@ export default function LoginPage() {
                 type="password"
                 required
                 placeholder="•••••••••"
-                className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent placeholder:text-gray-400 text-sm sm:text-base"
+                className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent placeholder:text-gray-400 text-sm sm:text-base text-gray-900"
               />
             </div>
           </div>

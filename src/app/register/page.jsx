@@ -48,6 +48,7 @@ export default function Register() {
     const bloodGroup = formData.get('bloodGroup')
     const district = formData.get('district')
     const upazila = formData.get('upazila')
+    const phone = formData.get('phone')
 
     // Validate password
     const passError = validatePassword(password)
@@ -70,7 +71,9 @@ export default function Register() {
       password,
       bloodGroup,
       district,
-      upazila
+      upazila,
+      phone,
+      image: previewImg
     })
 
     if (result.success) {
@@ -133,20 +136,32 @@ export default function Register() {
                 type="text"
                 placeholder="John Doe"
                 required
-                className="w-full h-10 sm:h-11 px-3 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm placeholder:text-gray-400"
+                className="w-full h-10 sm:h-11 px-3 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm placeholder:text-gray-400 text-gray-900"
               />
             </div>
 
-            {/* Email Address */}
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">Email Address</label>
-              <input
-                name="email"
-                type="email"
-                placeholder="name@example.com"
-                required
-                className="w-full h-10 sm:h-11 px-3 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm placeholder:text-gray-400"
-              />
+            {/* Email Address and Mobile Number */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Email Address</label>
+                <input
+                  name="email"
+                  type="email"
+                  placeholder="name@example.com"
+                  required
+                  className="w-full h-10 sm:h-11 px-3 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm placeholder:text-gray-400 text-gray-900"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Mobile Number</label>
+                <input
+                  name="phone"
+                  type="tel"
+                  placeholder="+880 1XXXXXXXXX"
+                  required
+                  className="w-full h-10 sm:h-11 px-3 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm placeholder:text-gray-400 text-gray-900"
+                />
+              </div>
             </div>
 
             {/* Blood Group and District */}
@@ -156,7 +171,7 @@ export default function Register() {
                 <select
                   name="bloodGroup"
                   required
-                  className="w-full h-10 sm:h-11 px-2 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm text-gray-400"
+                  className="w-full h-10 sm:h-11 px-2 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm text-gray-900"
                 >
                   <option value="">Select</option>
                   <option value="A+">A+</option>
@@ -174,7 +189,7 @@ export default function Register() {
                 <select
                   name="district"
                   required
-                  className="w-full h-10 sm:h-11 px-2 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm text-gray-400"
+                  className="w-full h-10 sm:h-11 px-2 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm text-gray-900"
                 >
                   <option value="">Select</option>
                   <option value="dhaka">Dhaka</option>
@@ -191,7 +206,7 @@ export default function Register() {
               <select
                 name="upazila"
                 required
-                className="w-full h-10 sm:h-11 px-3 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm text-gray-400"
+                className="w-full h-10 sm:h-11 px-3 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm text-gray-900"
               >
                 <option value="">Select Upazila</option>
                 <option value="gulshan">Gulshan</option>
@@ -210,7 +225,7 @@ export default function Register() {
                   type={showPassword ? 'text' : 'password'}
                   placeholder="••••••••"
                   required
-                  className="w-full h-10 sm:h-11 px-3 sm:px-4 pr-10 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm placeholder:text-gray-400"
+                  className="w-full h-10 sm:h-11 px-3 sm:px-4 pr-10 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm placeholder:text-gray-400 text-gray-900"
                 />
                 <button
                   type="button"
@@ -234,7 +249,7 @@ export default function Register() {
                   type={showConfirm ? 'text' : 'password'}
                   placeholder="••••••••"
                   required
-                  className="w-full h-10 sm:h-11 px-3 sm:px-4 pr-10 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm placeholder:text-gray-400"
+                  className="w-full h-10 sm:h-11 px-3 sm:px-4 pr-10 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm placeholder:text-gray-400 text-gray-900"
                 />
                 <button
                   type="button"

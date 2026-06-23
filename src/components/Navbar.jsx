@@ -32,17 +32,17 @@ export function Navbar() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-8">
+                    <Link
+            href="/requests"
+            className={isActive('/requests') ? "text-red-700 font-bold border-b-2 border-red-700 pb-1" : "text-gray-600 hover:text-red-700 font-medium transition"}
+          >
+            Donation Requests
+          </Link>
           <Link
             href="/search"
             className={isActive('/search') ? "text-red-700 font-bold border-b-2 border-red-700 pb-1" : "text-gray-600 hover:text-red-700 font-medium transition"}
           >
             Search Donors
-          </Link>
-          <Link
-            href="/requests"
-            className={isActive('/requests') ? "text-red-700 font-bold border-b-2 border-red-700 pb-1" : "text-gray-600 hover:text-red-700 font-medium transition"}
-          >
-            Donation Requests
           </Link>
           <Link
             href="/funding"

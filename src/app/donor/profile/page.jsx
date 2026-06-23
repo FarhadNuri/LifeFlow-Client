@@ -1,13 +1,73 @@
 'use client'
 
 import Link from 'next/link'
-import { MapPin, Building2 } from 'lucide-react'
-import { useState } from 'react'
+import { MapPin, Building2, Loader2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/context/AuthContext'
 
 export default function DonorProfilePage() {
-  const [bloodGroup, setBloodGroup] = useState('B Positive (B+)')
-  const [district, setDistrict] = useState('Dhaka')
-  const [upazila, setUpazila] = useState('Dhanmondi')
+  const { user } = useAuth()
+  const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  const [bloodGroup, setBloodGroup] = useState('')
+  const [district, setDistrict] = useState('')
+  const [upazila, setUpazila] = useState('')
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile()
+    }
+  }, [user])
+
+  const fetchProfile = async () => {
+    try {
+      setLoading(true)
+      const token = localStorage.getItem('token')
+      const userId = user?.id || user?.sub || user?._id
+
+      if (!userId || !token) {
+        setLoading(false)
+        return
+      }
+
+      const response = await fetch(`http://localhost:5000/donor/profile/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setProfile(data)
+        setName(data.name || '')
+        setEmail(data.email || '')
+        setBloodGroup(data.bloodType || data.bloodGroup || '')
+        setPhone(data.phone || '')
+        setDistrict(data.location || data.district || '')
+        setUpazila(data.upazila || '')
+      } else {
+        setError('Failed to load profile')
+      }
+    } catch (err) {
+      console.error(err)
+      setError('Failed to connect to the server')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-red-700" />
+      </div>
+    )
+  }
 
   return (
     <div className="flex-1 overflow-auto">
@@ -24,31 +84,37 @@ export default function DonorProfilePage() {
 
       {/* Content */}
       <div className="p-8">
+        {error && (
+          <div className="mb-8 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
+            {error}
+          </div>
+        )}
+
         {/* Profile Card */}
         <div className="bg-white rounded-xl border border-gray-200 p-8 mb-8">
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-6">
               {/* Avatar */}
               <img
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop"
-                alt="Ahmed Sharif"
+                src={profile?.image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop"}
+                alt={name || "Donor"}
                 className="w-32 h-32 rounded-full object-cover"
               />
               {/* Info */}
               <div>
                 <div className="flex items-center gap-3 mb-3">
-                  <h2 className="text-2xl font-bold text-gray-900">Ahmed Sharif</h2>
-                  <span className="bg-red-700 text-white text-xs font-semibold px-3 py-1 rounded-full">B Positive</span>
+                  <h2 className="text-2xl font-bold text-gray-900">{name || 'Loading...'}</h2>
+                  <span className="bg-red-700 text-white text-xs font-semibold px-3 py-1 rounded-full">{bloodGroup}</span>
                 </div>
-                <p className="text-gray-600 mb-4">ahmed.sharif@lifeflow.org</p>
+                <p className="text-gray-600 mb-4">{email}</p>
                 <div className="flex items-center gap-6 text-sm">
                   <div className="flex items-center gap-2 text-gray-600">
                     <MapPin className="w-4 h-4" />
-                    <span>Dhaka</span>
+                    <span>{district}</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-600">
                     <Building2 className="w-4 h-4" />
-                    <span>Dhanmondi</span>
+                    <span>{upazila}</span>
                   </div>
                 </div>
               </div>
@@ -79,16 +145,18 @@ export default function DonorProfilePage() {
                 <label className="block text-sm font-medium text-gray-900 mb-3">Full Name</label>
                 <input
                   type="text"
-                  defaultValue="Ahmed Sharif"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-50"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-50 text-gray-900"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-3">Email Address</label>
                 <input
                   type="email"
-                  defaultValue="ahmed.sharif@lifeflow.org"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-50"
+                  value={email}
+                  readOnly
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-100 cursor-not-allowed text-gray-900"
                 />
               </div>
             </div>
@@ -100,24 +168,26 @@ export default function DonorProfilePage() {
                 <select
                   value={bloodGroup}
                   onChange={(e) => setBloodGroup(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-50 appearance-none cursor-pointer"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-50 appearance-none cursor-pointer text-gray-900"
                 >
-                  <option>A Positive (A+)</option>
-                  <option>A Negative (A-)</option>
-                  <option>B Positive (B+)</option>
-                  <option>B Negative (B-)</option>
-                  <option>O Positive (O+)</option>
-                  <option>O Negative (O-)</option>
-                  <option>AB Positive (AB+)</option>
-                  <option>AB Negative (AB-)</option>
+                  <option value="">Select</option>
+                  <option value="A+">A Positive (A+)</option>
+                  <option value="A-">A Negative (A-)</option>
+                  <option value="B+">B Positive (B+)</option>
+                  <option value="B-">B Negative (B-)</option>
+                  <option value="O+">O Positive (O+)</option>
+                  <option value="O-">O Negative (O-)</option>
+                  <option value="AB+">AB Positive (AB+)</option>
+                  <option value="AB-">AB Negative (AB-)</option>
                 </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-3">Phone Number</label>
                 <input
                   type="tel"
-                  defaultValue="+880 1712 345678"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-50"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-50 text-gray-900"
                 />
               </div>
             </div>
@@ -129,12 +199,13 @@ export default function DonorProfilePage() {
                 <select
                   value={district}
                   onChange={(e) => setDistrict(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-50 appearance-none cursor-pointer"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-50 appearance-none cursor-pointer text-gray-900"
                 >
-                  <option>Dhaka</option>
-                  <option>Chittagong</option>
-                  <option>Sylhet</option>
-                  <option>Khulna</option>
+                  <option value="">Select</option>
+                  <option value="dhaka">Dhaka</option>
+                  <option value="chattogram">Chattogram</option>
+                  <option value="sylhet">Sylhet</option>
+                  <option value="rajshahi">Rajshahi</option>
                 </select>
               </div>
               <div>
@@ -142,12 +213,13 @@ export default function DonorProfilePage() {
                 <select
                   value={upazila}
                   onChange={(e) => setUpazila(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-50 appearance-none cursor-pointer"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-50 appearance-none cursor-pointer text-gray-900"
                 >
-                  <option>Dhanmondi</option>
-                  <option>Mirpur</option>
-                  <option>Gulshan</option>
-                  <option>Banani</option>
+                  <option value="">Select</option>
+                  <option value="gulshan">Gulshan</option>
+                  <option value="dhanmondi">Dhanmondi</option>
+                  <option value="uttara">Uttara</option>
+                  <option value="mirpur">Mirpur</option>
                 </select>
               </div>
             </div>

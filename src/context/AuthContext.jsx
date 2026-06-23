@@ -61,7 +61,7 @@ export function AuthProvider({ children }) {
 
       localStorage.setItem('token', data.token)
       setUser(data.user)
-      return { success: true }
+      return { success: true, user: data.user }
     } catch (error) {
       return { success: false, error: error.message }
     }
@@ -85,7 +85,7 @@ export function AuthProvider({ children }) {
 
       localStorage.setItem('token', data.token)
       setUser(data.user)
-      return { success: true }
+      return { success: true, user: data.user }
     } catch (error) {
       return { success: false, error: error.message }
     }

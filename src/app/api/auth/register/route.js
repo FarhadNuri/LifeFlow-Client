@@ -5,7 +5,7 @@ import clientPromise from '@/lib/mongodb'
 
 export async function POST(request) {
   try {
-    const { name, email, password, bloodGroup, district, upazila } = await request.json()
+    const { name, email, password, bloodGroup, district, upazila, phone, image } = await request.json()
 
     // Validate required fields
     if (!name || !email || !password) {
@@ -57,6 +57,8 @@ export async function POST(request) {
       bloodGroup: bloodGroup || null,
       district: district || null,
       upazila: upazila || null,
+      phone: phone || null,
+      image: image || null,
       role: 'donor', // Default role
       createdAt: new Date(),
       updatedAt: new Date()
@@ -84,6 +86,8 @@ export async function POST(request) {
       bloodGroup: newUser.bloodGroup,
       district: newUser.district,
       upazila: newUser.upazila,
+      phone: newUser.phone,
+      image: newUser.image,
       role: newUser.role
     }
 
