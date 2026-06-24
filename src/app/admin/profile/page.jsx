@@ -1,8 +1,48 @@
 'use client'
 
-import { Mail, Shield, ShieldCheck } from 'lucide-react'
+import { Mail, Shield, ShieldCheck, Loader2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 export default function AdminProfilePage() {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [role, setRole] = useState('')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        if (!token) return
+        const response = await fetch('/api/auth/me', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        if (response.ok) {
+          const data = await response.json()
+          const userObj = data.user || {}
+          setName(userObj.name || '')
+          setEmail(userObj.email || '')
+          setRole(userObj.role || 'admin')
+        }
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProfile()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center min-h-screen bg-slate-50">
+        <Loader2 className="w-8 h-8 animate-spin text-red-700" />
+      </div>
+    )
+  }
+
   return (
     <div className="flex-1 overflow-auto bg-slate-50 min-h-screen">
       {/* Header */}
@@ -24,15 +64,15 @@ export default function AdminProfilePage() {
               </div>
               <div className="pt-2">
                 <div className="flex items-center gap-3 mb-2">
-                  <h2 className="text-2xl font-bold text-gray-900">System Admin</h2>
-                  <span className="bg-red-700 text-white text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1">
+                  <h2 className="text-2xl font-bold text-gray-900">{name || 'Loading...'}</h2>
+                  <span className="bg-red-700 text-white text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1 capitalize">
                     <Shield className="w-3 h-3" />
-                    Super Admin
+                    {role === 'admin' ? 'Super Admin' : role}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-600 mb-4">
                   <Mail className="w-4 h-4" />
-                  <span>admin@lifeflow.org</span>
+                  <span>{email || 'Loading...'}</span>
                 </div>
               </div>
             </div>
@@ -48,16 +88,18 @@ export default function AdminProfilePage() {
                   <label className="block text-sm font-medium text-gray-900 mb-2">Full Name</label>
                   <input
                     type="text"
-                    defaultValue="System Admin"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-50"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-white text-gray-900"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-900 mb-2">Email Address</label>
                   <input
                     type="email"
-                    defaultValue="admin@lifeflow.org"
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-50"
+                    value={email}
+                    readOnly
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-100 text-gray-600 cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -66,7 +108,7 @@ export default function AdminProfilePage() {
                 <label className="block text-sm font-medium text-gray-900 mb-2">Role</label>
                 <input
                   type="text"
-                  defaultValue="Super Administrator"
+                  value={role === 'admin' ? 'Super Administrator' : role}
                   disabled
                   className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
                 />

@@ -1,7 +1,122 @@
+'use client'
+
 import Link from 'next/link'
-import { Droplet, Filter, Download, Search, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react'
+import { Droplet, Filter, Download, Search, ChevronLeft, ChevronRight, MoreVertical, Loader2, Eye, Edit, Trash2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
 
 export default function AdminRequests() {
+  const [requests, setRequests] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [viewModalData, setViewModalData] = useState(null)
+  const [editModalData, setEditModalData] = useState(null)
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this request globally?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/admin/requests/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        setRequests(prev => prev.filter(req => req._id !== id));
+      } else {
+        alert('Failed to delete request.');
+      }
+    } catch (error) {
+      console.error('Error deleting request:', error);
+    }
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/admin/requests/${editModalData._id}`, {
+        method: 'PATCH',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({
+          bloodGroup: editModalData.bloodGroup,
+          district: editModalData.district,
+          upazila: editModalData.upazila,
+          date: editModalData.date,
+          time: editModalData.time,
+          message: editModalData.message,
+        })
+      });
+      if (response.ok) {
+        setRequests(prev => prev.map(req => req._id === editModalData._id ? editModalData : req));
+        setEditModalData(null);
+      } else {
+        alert('Failed to update request.');
+      }
+    } catch (error) {
+      console.error('Error updating request:', error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const token = localStorage.getItem('token')
+        const response = await fetch('http://localhost:5000/admin/requests', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        if (response.ok) {
+          const data = await response.json()
+          setRequests(data)
+        }
+      } catch (error) {
+        console.error('Failed to fetch requests:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchRequests()
+  }, [])
+
+  const updateStatus = async (requestId, newStatus) => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`http://localhost:5000/admin/requests/${requestId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      })
+      if (response.ok) {
+        setRequests(requests.map(r => r._id === requestId ? { ...r, status: newStatus } : r))
+      } else {
+        console.error('Failed to update status on server')
+      }
+    } catch (error) {
+      console.error('Failed to update status:', error)
+    }
+  }
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Pending': return 'bg-amber-100 text-amber-700'
+      case 'In Progress': return 'bg-blue-100 text-blue-700'
+      case 'Completed': return 'bg-green-100 text-green-700'
+      case 'Cancelled': return 'bg-gray-100 text-gray-700'
+      default: return 'bg-gray-100 text-gray-700'
+    }
+  }
+
+  // Calculate dynamic stats
+  const activeCount = requests.filter(r => r.status === 'Pending' || r.status === 'In Progress').length
+  const criticalCount = requests.filter(r => r.bloodGroup === 'O-').length // Example of critical
+  const completedCount = requests.filter(r => r.status === 'Completed').length
+  const totalCount = requests.length
+
   return (
       <main className="px-12 py-8">
         {/* Header */}
@@ -29,7 +144,7 @@ export default function AdminRequests() {
               <Droplet className="w-6 h-6 text-red-700" />
               <span className="px-2 py-1 bg-amber-100 text-amber-700 text-xs font-bold rounded">Active</span>
             </div>
-            <p className="text-4xl font-bold text-gray-900 mb-1">142</p>
+            <p className="text-4xl font-bold text-gray-900 mb-1">{activeCount}</p>
             <p className="text-sm text-gray-600">Pending Requests</p>
           </div>
 
@@ -38,8 +153,8 @@ export default function AdminRequests() {
               <Droplet className="w-6 h-6 text-blue-600" />
               <span className="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded">Critical</span>
             </div>
-            <p className="text-4xl font-bold text-gray-900 mb-1">28</p>
-            <p className="text-sm text-gray-600">Emergency Appeals</p>
+            <p className="text-4xl font-bold text-gray-900 mb-1">{criticalCount}</p>
+            <p className="text-sm text-gray-600">O- Requests</p>
           </div>
 
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
@@ -47,17 +162,17 @@ export default function AdminRequests() {
               <Droplet className="w-6 h-6 text-orange-600" />
               <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded">Fulfilled</span>
             </div>
-            <p className="text-4xl font-bold text-gray-900 mb-1">1,048</p>
+            <p className="text-4xl font-bold text-gray-900 mb-1">{completedCount}</p>
             <p className="text-sm text-gray-600">Total Successes</p>
           </div>
 
           <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
             <div className="flex justify-between items-start mb-2">
               <Droplet className="w-6 h-6 text-gray-400" />
-              <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs font-bold rounded">Expiring</span>
+              <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs font-bold rounded">Total</span>
             </div>
-            <p className="text-4xl font-bold text-gray-900 mb-1">12</p>
-            <p className="text-sm text-gray-600">Due in 24h</p>
+            <p className="text-4xl font-bold text-gray-900 mb-1">{totalCount}</p>
+            <p className="text-sm text-gray-600">All Requests</p>
           </div>
         </div>
 
@@ -88,74 +203,81 @@ export default function AdminRequests() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {[
-                  {
-                    name: 'David Henderson',
-                    email: 'd.henderson@example.com',
-                    blood: 'O-',
-                    units: '3 Units',
-                    location: 'St. Jude Medical Center',
-                    deadline: 'Today, 5:00 PM',
-                    status: 'Urgent',
-                    statusColor: 'bg-amber-100 text-amber-700',
-                  },
-                  {
-                    name: 'Elena Rodriguez',
-                    email: 'e.rod@provider.net',
-                    blood: 'A+',
-                    units: '1 Unit',
-                    location: 'City General Hospital',
-                    deadline: 'Dec 15, 2024',
-                    status: 'In Review',
-                    statusColor: 'bg-blue-100 text-blue-700',
-                  },
-                  {
-                    name: 'Marcus Thorne',
-                    email: 'm.thorne@global.com',
-                    blood: 'B-',
-                    units: '2 Units',
-                    location: 'Community Health Hub',
-                    deadline: 'Dec 10, 2024',
-                    status: 'Completed',
-                    statusColor: 'bg-green-100 text-green-700',
-                  },
-                  {
-                    name: 'Sarah Jenkins',
-                    email: 'sarah.j@clinic.org',
-                    blood: 'AB+',
-                    units: '4 Units',
-                    location: "Unity Children's Hospital",
-                    deadline: 'Dec 01, 2024',
-                    status: 'Expired',
-                    statusColor: 'bg-gray-100 text-gray-700',
-                  },
-                ].map((req, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-300 to-gray-400"></div>
-                        <div>
-                          <p className="font-semibold text-gray-900">{req.name}</p>
-                          <p className="text-xs text-gray-600">{req.email}</p>
-                        </div>
+                {loading ? (
+                  <tr>
+                    <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
+                      <div className="flex justify-center items-center gap-2">
+                        <Loader2 className="w-5 h-5 animate-spin text-red-700" />
+                        <span>Loading requests...</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-red-700 text-white font-bold text-sm">{req.blood}</span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{req.units}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{req.location}</td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{req.deadline}</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-md text-xs font-semibold ${req.statusColor}`}>{req.status}</span>
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                      <button className="p-2 hover:bg-gray-100 rounded-lg">
-                        <MoreVertical className="w-4 h-4 text-gray-400" />
-                      </button>
+                  </tr>
+                ) : requests.length === 0 ? (
+                  <tr>
+                    <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
+                      No active requests found.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  requests.map((req, idx) => (
+                    <tr key={req._id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center font-bold text-red-700 text-sm">
+                            {req.donorName ? req.donorName.substring(0, 2).toUpperCase() : 'U'}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-gray-900">{req.donorName || 'Unknown User'}</p>
+                            <p className="text-xs text-gray-600">{req.donorEmail}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="w-10 h-10 inline-flex items-center justify-center rounded-full bg-red-700 text-white font-bold text-sm">{req.bloodGroup || 'N/A'}</span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-900">1 Unit</td>
+                      <td className="px-6 py-4 text-sm text-gray-900 capitalize">{req.upazila}, {req.district}</td>
+                      <td className="px-6 py-4 text-sm text-gray-900">{req.date} {req.time}</td>
+                      <td className="px-6 py-4">
+                        <select
+                          value={req.status}
+                          onChange={(e) => updateStatus(req._id, e.target.value)}
+                          className={`px-3 py-1 rounded-md text-xs font-semibold outline-none cursor-pointer appearance-none border-none text-center ${getStatusColor(req.status)}`}
+                        >
+                          <option value="Pending" className="bg-white text-gray-900">Pending</option>
+                          <option value="In Progress" className="bg-white text-gray-900">In Progress</option>
+                          <option value="Completed" className="bg-white text-gray-900">Completed</option>
+                          <option value="Cancelled" className="bg-white text-gray-900">Cancelled</option>
+                        </select>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => setViewModalData(req)}
+                            title="View Details"
+                            className="p-2 hover:bg-gray-100 rounded-lg text-gray-500"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => setEditModalData(req)}
+                            title="Edit Request"
+                            className="p-2 hover:bg-gray-100 rounded-lg text-gray-500"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(req._id)}
+                            title="Delete Request"
+                            className="p-2 hover:bg-red-50 rounded-lg text-red-600"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -172,6 +294,70 @@ export default function AdminRequests() {
             </button>
           </div>
         </div>
+
+        {/* View Modal */}
+        {viewModalData && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-lg">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Request Details</h3>
+              <div className="space-y-3 text-sm">
+                <p className="text-gray-900"><span className="font-semibold text-gray-700">Blood Group:</span> {viewModalData.bloodGroup}</p>
+                <p className="text-gray-900"><span className="font-semibold text-gray-700">Location:</span> <span className="capitalize">{viewModalData.upazila}, {viewModalData.district}</span></p>
+                <p className="text-gray-900"><span className="font-semibold text-gray-700">Date:</span> {viewModalData.date}</p>
+                <p className="text-gray-900"><span className="font-semibold text-gray-700">Time:</span> {viewModalData.time}</p>
+                <p className="text-gray-900"><span className="font-semibold text-gray-700">Status:</span> {viewModalData.status}</p>
+                <div>
+                  <span className="font-semibold text-gray-700 block mb-1">Message:</span>
+                  <p className="bg-gray-50 p-3 rounded-lg text-gray-900 border border-gray-200">{viewModalData.message || 'No message provided.'}</p>
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end">
+                <button onClick={() => setViewModalData(null)} className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium transition-colors">Close</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Modal */}
+        {editModalData && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-xl max-w-lg w-full p-6 shadow-lg max-h-[90vh] overflow-y-auto">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Edit Request</h3>
+              <form onSubmit={handleEditSubmit} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-semibold text-gray-700">Blood Group</label>
+                    <input type="text" value={editModalData.bloodGroup} onChange={e => setEditModalData({...editModalData, bloodGroup: e.target.value})} required className="border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 bg-white" />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-semibold text-gray-700">District</label>
+                    <input type="text" value={editModalData.district} onChange={e => setEditModalData({...editModalData, district: e.target.value})} required className="border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 bg-white" />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-semibold text-gray-700">Upazila</label>
+                    <input type="text" value={editModalData.upazila} onChange={e => setEditModalData({...editModalData, upazila: e.target.value})} required className="border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 bg-white" />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-semibold text-gray-700">Date</label>
+                    <input type="date" value={editModalData.date} onChange={e => setEditModalData({...editModalData, date: e.target.value})} required className="border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 bg-white" />
+                  </div>
+                  <div className="flex flex-col gap-1 text-gray-900 bg-white">
+                    <label className="text-xs font-semibold text-gray-700">Time</label>
+                    <input type="time" value={editModalData.time} onChange={e => setEditModalData({...editModalData, time: e.target.value})} required className="border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 bg-white" />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-gray-700">Message</label>
+                  <textarea rows={3} value={editModalData.message} onChange={e => setEditModalData({...editModalData, message: e.target.value})} required className="border border-gray-300 rounded px-3 py-2 text-sm resize-none text-gray-900 bg-white"></textarea>
+                </div>
+                <div className="mt-6 flex justify-end gap-3">
+                  <button type="button" onClick={() => setEditModalData(null)} className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors">Cancel</button>
+                  <button type="submit" className="px-4 py-2 bg-red-700 hover:bg-red-800 text-white rounded-lg font-medium transition-colors">Save Changes</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </main>
     )
 }
