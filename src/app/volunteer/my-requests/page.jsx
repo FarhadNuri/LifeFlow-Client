@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Heart, Share2, Plus, Search, Filter, Eye, Edit, Trash2, ArrowRight, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, Share2, Plus, Search, Filter, Eye, Edit, Trash2, ArrowRight, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 
-const DonorDashboard = () => {
+const VolunteerDashboard = () => {
   const { user } = useAuth();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,10 +13,9 @@ const DonorDashboard = () => {
   const [filterDistrict, setFilterDistrict] = useState('');
   const [filterUpazila, setFilterUpazila] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 3;
   const [viewModalData, setViewModalData] = useState(null);
   const [editModalData, setEditModalData] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
@@ -27,10 +26,21 @@ const DonorDashboard = () => {
     setTimeout(() => setToastMessage(''), 5000);
   };
 
+  const itemsPerPage = 3;
+  const filteredRequests = requests.filter(req => {
+    if (filterBloodGroup && req.bloodGroup !== filterBloodGroup) return false;
+    if (filterDistrict && req.district?.toLowerCase() !== filterDistrict.toLowerCase()) return false;
+    if (filterUpazila && req.upazila?.toLowerCase() !== filterUpazila.toLowerCase()) return false;
+    return true;
+  });
+  const sortedRequests = [...filteredRequests].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  const totalPages = Math.ceil(sortedRequests.length / itemsPerPage);
+  const currentRequests = sortedRequests.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   const handleDelete = async (id) => {
     setIsDeleting(id);
     try {
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 1000)); // Artificial delay for loader visibility
       const token = localStorage.getItem('token');
       const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
         method: 'DELETE',
@@ -57,7 +67,7 @@ const DonorDashboard = () => {
     e.preventDefault();
     setIsEditing(true);
     try {
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 1500)); // Artificial delay for loader visibility
       const token = localStorage.getItem('token');
       const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
         method: 'PATCH',
@@ -117,6 +127,7 @@ const DonorDashboard = () => {
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   };
 
+  // Helper for status colors
   const getStatusColor = (status) => {
     switch (status) {
       case 'Pending': return 'bg-amber-100 text-amber-700';
@@ -127,37 +138,22 @@ const DonorDashboard = () => {
     }
   };
 
-  const filteredRequests = requests.filter(req => {
-    if (filterBloodGroup && (req.bloodGroup || req.bloodType) !== filterBloodGroup) return false;
-    const loc = (req.district || req.location || '').toLowerCase();
-    if (filterDistrict && loc !== filterDistrict.toLowerCase()) return false;
-    if (filterUpazila && (req.upazila || '').toLowerCase() !== filterUpazila.toLowerCase()) return false;
-    return true;
-  });
-
-  const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
-  const currentRequests = filteredRequests.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
   return (
-    <main className="w-full mt-16 md:mt-0">
-
+    <main className="w-full">
       {/* Main Grid */}
       <div className="p-6 md:p-8 max-w-7xl mx-auto">
         {/* Header Section */}
         <header className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-8">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
-              Welcome back, {user?.name || 'Donor'}!
+              Welcome back, {user?.name || 'Volunteer'}!
             </h2>
             <p className="text-slate-600">
               You have {requests.length} total requests.
             </p>
           </div>
           <div className="flex gap-3">
-            <Link href="/donor/create-request" className="px-4 py-2 bg-red-700 text-white rounded-lg font-semibold hover:bg-red-800 transition-colors flex items-center gap-2 text-sm md:text-base">
+            <Link href="/volunteer/create-request" className="px-4 py-2 bg-red-700 text-white rounded-lg font-semibold hover:bg-red-800 transition-colors flex items-center gap-2 text-sm md:text-base">
               <Plus className="w-4 h-4" />
               New Request
             </Link>
@@ -185,19 +181,18 @@ const DonorDashboard = () => {
             </div>
           </div>
 
-
         </section>
 
         {/* Recent Requests Section */}
         <section className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
           {/* Header */}
           <div className="px-6 py-4 border-b border-slate-200 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-            <h3 className="text-lg font-bold text-slate-900">My Requests</h3>
+            <h3 className="text-lg font-bold text-slate-900">Recent Requests</h3>
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
               <select
                 value={filterBloodGroup}
                 onChange={(e) => setFilterBloodGroup(e.target.value)}
-                className="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-700 bg-white"
+                className="px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-red-700 outline-none text-slate-700 bg-white"
               >
                 <option value="">All Blood Groups</option>
                 <option value="A+">A+</option>
@@ -212,7 +207,7 @@ const DonorDashboard = () => {
               <select
                 value={filterDistrict}
                 onChange={(e) => setFilterDistrict(e.target.value)}
-                className="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-700 bg-white capitalize"
+                className="px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-red-700 outline-none text-slate-700 bg-white capitalize"
               >
                 <option value="">All Districts</option>
                 <option value="dhaka">Dhaka</option>
@@ -223,7 +218,7 @@ const DonorDashboard = () => {
               <select
                 value={filterUpazila}
                 onChange={(e) => setFilterUpazila(e.target.value)}
-                className="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-700 bg-white capitalize"
+                className="px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-red-700 outline-none text-slate-700 bg-white capitalize"
               >
                 <option value="">All Upazilas</option>
                 <option value="uttara">Uttara</option>
@@ -236,7 +231,7 @@ const DonorDashboard = () => {
           </div>
 
           {/* Table */}
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto md:overflow-visible">
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
@@ -255,39 +250,39 @@ const DonorDashboard = () => {
                       Loading requests...
                     </td>
                   </tr>
-                ) : filteredRequests.length === 0 ? (
+                ) : requests.length === 0 ? (
                   <tr>
                     <td colSpan="6" className="px-6 py-8 text-center text-slate-500">
-                      You have no donation requests matching your filters.
+                      You have no donation requests yet.
                     </td>
                   </tr>
                 ) : (
                   currentRequests.map((request) => (
                     <tr
                       key={request._id}
-                      onClick={() => setViewModalData(request)}
                       className="hover:bg-slate-50 transition-colors cursor-pointer border-b border-slate-100 last:border-0"
+                      onClick={() => setViewModalData(request)}
                     >
                       <td className="px-4 md:px-6 py-4">
                         <div className="flex items-center gap-3">
                           {user?.image ? (
                             <img 
                               src={user.image} 
-                              alt={request.donorName || 'User'} 
-                              className="w-8 h-8 rounded-full object-cover shrink-0" 
+                              alt={request.volunteerName || 'User'} 
+                              className="w-10 h-10 rounded-full object-cover shrink-0" 
                             />
                           ) : (
-                            <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center font-bold text-red-700 text-xs shrink-0">
-                              {getInitials(request.donorName)}
+                            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center font-bold text-red-700 text-xs shrink-0">
+                              {getInitials(request.volunteerName)}
                             </div>
                           )}
-                          <span className="font-semibold text-slate-900">
-                            {request.donorName || 'Unknown'}
+                          <span className="font-semibold text-slate-900 truncate min-w-0">
+                            {request.volunteerName || 'Unknown'}
                           </span>
                         </div>
                       </td>
                       <td className="px-4 md:px-6 py-4 text-center md:text-left">
-                        <span className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-red-700 text-white font-bold text-xs ring-2 ring-red-200">
+                        <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-red-700 text-white font-bold text-sm">
                           {request.bloodGroup || 'N/A'}
                         </span>
                       </td>
@@ -309,6 +304,7 @@ const DonorDashboard = () => {
                       </td>
                       <td className="hidden md:table-cell px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-end gap-2">
+
                           <button
                             onClick={() => setEditModalData(request)}
                             title="Edit"
@@ -317,7 +313,7 @@ const DonorDashboard = () => {
                             <Edit className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => setDeleteConfirmId(request._id)}
+                            onClick={(e) => { e.stopPropagation(); setDeleteConfirmId(request._id); }}
                             title="Delete"
                             disabled={isDeleting === request._id}
                             className="p-2 hover:bg-red-50 rounded-lg text-red-600 transition-colors disabled:opacity-50"
@@ -398,7 +394,26 @@ const DonorDashboard = () => {
                 <p className="bg-slate-50 p-3 rounded-lg text-slate-600 border border-slate-200">{viewModalData.message || 'No message provided.'}</p>
               </div>
             </div>
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex justify-end gap-2 border-t border-slate-100 pt-4">
+              <button
+                onClick={() => {
+                  setEditModalData(viewModalData);
+                  setViewModalData(null);
+                }}
+                className="px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg font-medium transition-colors flex items-center gap-2"
+              >
+                <Edit className="w-4 h-4" /> Edit
+              </button>
+              <button 
+                disabled={isDeleting === viewModalData._id}
+                onClick={async () => {
+                  setDeleteConfirmId(viewModalData._id);
+                }} 
+                className="px-4 py-2 bg-red-50 text-red-700 hover:bg-red-100 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
+              >
+                {isDeleting === viewModalData._id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                {isDeleting === viewModalData._id ? 'Deleting...' : 'Delete'}
+              </button>
               <button onClick={() => setViewModalData(null)} className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg font-medium transition-colors">Close</button>
             </div>
           </div>
@@ -439,7 +454,7 @@ const DonorDashboard = () => {
               </div>
               <div className="mt-6 flex justify-end gap-3">
                 <button type="button" onClick={() => setEditModalData(null)} disabled={isEditing} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors disabled:opacity-50">Cancel</button>
-                <button type="submit" disabled={isEditing} className="px-4 py-2 bg-red-700 hover:bg-red-800 text-white rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50">
+                <button type="submit" disabled={isEditing} className="px-4 py-2 bg-red-700 hover:bg-red-800 text-white rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-70">
                   {isEditing && <Loader2 className="w-4 h-4 animate-spin" />}
                   {isEditing ? 'Saving...' : 'Save Changes'}
                 </button>
@@ -461,14 +476,14 @@ const DonorDashboard = () => {
               Are you sure you want to delete this request? This action cannot be undone.
             </p>
             <div className="flex gap-3 justify-center">
-              <button
+              <button 
                 onClick={() => setDeleteConfirmId(null)}
                 disabled={isDeleting === deleteConfirmId}
                 className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
-              <button
+              <button 
                 onClick={async () => {
                   const success = await handleDelete(deleteConfirmId);
                   if (success && viewModalData?._id === deleteConfirmId) {
@@ -488,7 +503,7 @@ const DonorDashboard = () => {
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-24 right-4 md:right-8 bg-green-50 text-green-700 px-6 py-3 rounded-lg shadow-lg border border-green-200 z-[70] flex items-center gap-2 animate-in slide-in-from-top-2 duration-300">
+        <div className="fixed top-24 right-4 md:right-8 bg-green-50 text-green-700 px-6 py-3 rounded-lg shadow-lg border border-green-200 z-50 flex items-center gap-2 animate-in slide-in-from-top-2 duration-300">
           <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white shrink-0">✓</div>
           <p className="font-semibold text-sm">{toastMessage}</p>
         </div>
@@ -497,4 +512,4 @@ const DonorDashboard = () => {
   );
 };
 
-export default DonorDashboard;
+export default VolunteerDashboard;

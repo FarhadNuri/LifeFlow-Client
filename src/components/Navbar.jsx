@@ -1,13 +1,16 @@
 'use client'
 
 import Link from 'next/link'
-import { Droplet, Menu, X } from 'lucide-react'
+import { Droplet, Menu, X, User } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
+import { useAuth } from '@/context/AuthContext'
 
 export function Navbar() {
   const pathname = usePathname()
+  const { user, logout } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
 
   const isActive = (path) => {
     if (path === '/') return pathname === '/'
@@ -32,7 +35,7 @@ export function Navbar() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-8">
-                    <Link
+          <Link
             href="/requests"
             className={isActive('/requests') ? "text-red-700 font-bold border-b-2 border-red-700 pb-1" : "text-gray-600 hover:text-red-700 font-medium transition"}
           >
@@ -50,18 +53,41 @@ export function Navbar() {
           >
             Funding
           </Link>
-          <Link
-            href="/login"
-            className={isActive('/login') ? "text-red-700 font-bold border-b-2 border-red-700 pb-1" : "text-gray-600 hover:text-red-700 font-medium transition"}
-          >
-            Login
-          </Link>
-          <Link
-            href="/register"
-            className="bg-red-700 text-white px-6 py-2 rounded-md font-medium hover:bg-red-800 transition"
-          >
-            Join Now
-          </Link>
+          {user ? (
+            <div className="relative">
+              <button 
+                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center hover:bg-red-200 transition focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-offset-2"
+              >
+                <User className="w-5 h-5 text-red-700" />
+              </button>
+              
+              {isProfileMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2 flex flex-col overflow-hidden">
+                  <Link 
+                    href={user.role === 'admin' ? '/admin' : user.role === 'volunteer' ? '/volunteer' : '/donor'}
+                    onClick={() => setIsProfileMenuOpen(false)}
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-700 font-medium"
+                  >
+                    Dashboard
+                  </Link>
+                  <button 
+                    onClick={() => { setIsProfileMenuOpen(false); logout(); }}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-700 font-medium"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <Link
+              href="/login"
+              className={isActive('/login') ? "text-red-700 font-bold border-b-2 border-red-700 pb-1" : "text-gray-600 hover:text-red-700 font-medium transition"}
+            >
+              Login
+            </Link>
+          )}
         </nav>
 
         {/* Mobile Hamburger Button */}
@@ -99,13 +125,31 @@ export function Navbar() {
             >
               Funding
             </Link>
-            <Link
-              href="/login"
-              onClick={closeMenu}
-              className={isActive('/login') ? "text-red-700 font-bold py-2 border-l-4 border-red-700 pl-4" : "text-gray-600 hover:text-red-700 font-medium py-2 pl-4 transition"}
-            >
-              Login
-            </Link>
+            {user ? (
+              <>
+                <Link
+                  href={user.role === 'admin' ? '/admin' : user.role === 'volunteer' ? '/volunteer' : '/donor'}
+                  onClick={closeMenu}
+                  className="text-gray-600 hover:text-red-700 font-medium py-2 pl-4 transition border-l-4 border-transparent"
+                >
+                  Dashboard
+                </Link>
+                <button
+                  onClick={() => { closeMenu(); logout(); }}
+                  className="text-left text-gray-600 hover:text-red-700 font-medium py-2 pl-4 transition border-l-4 border-transparent"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                onClick={closeMenu}
+                className={isActive('/login') ? "text-red-700 font-bold py-2 border-l-4 border-red-700 pl-4" : "text-gray-600 hover:text-red-700 font-medium py-2 pl-4 transition"}
+              >
+                Login
+              </Link>
+            )}
             <Link
               href="/register"
               onClick={closeMenu}

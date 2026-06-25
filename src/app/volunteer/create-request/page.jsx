@@ -10,8 +10,8 @@ export default function CreateRequest() {
   const { user } = useAuth()
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [showToast, setShowToast] = useState(false)
   const [error, setError] = useState('')
+  const [showToast, setShowToast] = useState(false)
   const [formData, setFormData] = useState({
     bloodGroup: '',
     district: '',
@@ -78,7 +78,7 @@ export default function CreateRequest() {
       setShowToast(true)
       setTimeout(() => {
         setShowToast(false)
-        router.push('/donor/my-requests')
+        router.push('/volunteer/my-requests')
       }, 5000)
     } catch (err) {
       setError(err.message)
@@ -90,12 +90,12 @@ export default function CreateRequest() {
   return (
     <>
       {showToast && (
-        <div className="fixed top-24 right-4 md:right-8 bg-green-50 text-green-700 px-6 py-3 rounded-lg shadow-lg border border-green-200 z-[70] flex items-center gap-2 animate-in slide-in-from-top-2 duration-300">
+        <div className="fixed top-4 right-4 bg-green-50 text-green-700 px-6 py-3 rounded-lg shadow-lg border border-green-200 z-50 flex items-center gap-2 animate-in slide-in-from-top-2 duration-300">
           <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white shrink-0">✓</div>
           <p className="font-semibold text-sm">Blood donation request successfully broadcasted!</p>
         </div>
       )}
-      <main className="w-full max-w-6xl mx-auto px-4 md:px-12 py-8 mt-16 md:mt-0">
+      <main className="w-full max-w-4xl mx-auto px-4 md:px-12 py-8">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
           <div>
@@ -112,17 +112,17 @@ export default function CreateRequest() {
               <div className="flex flex-col items-center justify-center py-20">
                 <Loader2 className="w-12 h-12 animate-spin text-red-700 mb-4" />
                 <h3 className="text-xl font-bold text-gray-900">Broadcasting Request</h3>
-                <p className="text-gray-600 mt-2">Please wait while we notify nearby donors...</p>
+                <p className="text-gray-600 mt-2">Please wait while we notify nearby volunteers...</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-8">
                 {/* Requester Information Section */}
-              <div className="space-y-4">
-                {error && (
-                  <div className="p-3 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm mb-4">
-                    {error}
-                  </div>
-                )}
+                <div className="space-y-4">
+                  {error && (
+                    <div className="p-3 bg-red-50 text-red-700 border border-red-200 rounded-lg text-sm mb-4">
+                      {error}
+                    </div>
+                  )}
                 <h4 className="text-xs font-bold text-red-700 uppercase tracking-widest">Requester Information</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="flex flex-col gap-2">

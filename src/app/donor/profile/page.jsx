@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { MapPin, Building2, Loader2 } from 'lucide-react'
+import { Loader2, MapPin, Building2, Edit } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 
@@ -10,6 +10,14 @@ export default function DonorProfilePage() {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [isEditing, setIsEditing] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [toastMessage, setToastMessage] = useState('')
+
+  const showToast = (message) => {
+    setToastMessage(message)
+    setTimeout(() => setToastMessage(''), 5000)
+  }
 
   const [bloodGroup, setBloodGroup] = useState('')
   const [district, setDistrict] = useState('')
@@ -35,7 +43,7 @@ export default function DonorProfilePage() {
         return
       }
 
-      const response = await fetch(`http://localhost:5000/donor/profile/${userId}`, {
+      const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -61,6 +69,37 @@ export default function DonorProfilePage() {
     }
   }
 
+  const handleSave = async () => {
+    setIsSaving(true)
+    setError('')
+    try {
+      await new Promise(r => setTimeout(r, 1000))
+      const token = localStorage.getItem('token')
+      const userId = user?.id || user?.sub || user?._id
+      const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ name, bloodGroup, phone, district: district, location: district, upazila })
+      })
+
+      if (response.ok) {
+        setIsEditing(false)
+        showToast('Profile updated successfully!')
+        fetchProfile()
+      } else {
+        setError('Failed to update profile')
+      }
+    } catch (err) {
+      console.error(err)
+      setError('An error occurred while saving')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -70,12 +109,11 @@ export default function DonorProfilePage() {
   }
 
   return (
-    <div className="flex-1 overflow-auto">
+    <div className="flex-1 overflow-auto mt-16 md:mt-0">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="px-8 py-6 flex items-center justify-between">
+        <div className="px-4 md:px-8 py-4 md:py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <h1 className="text-2xl font-bold text-gray-900">Account Settings</h1>
-
         </div>
       </header>
 
@@ -88,30 +126,30 @@ export default function DonorProfilePage() {
         )}
 
         {/* Profile Card */}
-        <div className="bg-white rounded-xl border border-gray-200 p-8 mb-8">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-8 mb-8">
+          <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 text-center md:text-left">
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-6 w-full">
               {/* Avatar */}
               <img
                 src={profile?.image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop"}
                 alt={name || "Donor"}
-                className="w-32 h-32 rounded-full object-cover"
+                className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover shrink-0"
               />
               {/* Info */}
-              <div>
-                <div className="flex items-center gap-3 mb-3">
+              <div className="flex-1">
+                <div className="flex flex-col md:flex-row items-center md:items-start gap-3 mb-3">
                   <h2 className="text-2xl font-bold text-gray-900">{name || 'Loading...'}</h2>
                   <span className="bg-red-700 text-white text-xs font-semibold px-3 py-1 rounded-full">{bloodGroup}</span>
                 </div>
                 <p className="text-gray-600 mb-4">{email}</p>
-                <div className="flex items-center gap-6 text-sm">
+                <div className="flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4 sm:gap-6 text-sm">
                   <div className="flex items-center gap-2 text-gray-600">
-                    <MapPin className="w-4 h-4" />
-                    <span>{district}</span>
+                    <MapPin className="w-4 h-4 shrink-0" />
+                    <span>{district || 'Not Set'}</span>
                   </div>
                   <div className="flex items-center gap-2 text-gray-600">
-                    <Building2 className="w-4 h-4" />
-                    <span>{upazila}</span>
+                    <Building2 className="w-4 h-4 shrink-0" />
+                    <span>{upazila || 'Not Set'}</span>
                   </div>
                 </div>
               </div>
@@ -120,52 +158,56 @@ export default function DonorProfilePage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 gap-8 mb-8">
-          <div className="bg-white rounded-xl border border-gray-200 p-8">
-            <p className="text-gray-600 text-sm font-medium mb-2">Total Donations</p>
-            <p className="text-4xl font-bold text-gray-900">12</p>
-          </div>
-          <div className="bg-white rounded-xl border border-gray-200 p-8">
-            <p className="text-gray-600 text-sm font-medium mb-2">Last Donation</p>
-            <p className="text-2xl font-bold text-gray-900">Oct 24, 2023</p>
-          </div>
-        </div>
+
 
         {/* Personal Information Form */}
-        <div className="bg-white rounded-xl border border-gray-200 p-8">
-          <h3 className="text-lg font-bold text-gray-900 mb-8 pb-4 border-b border-gray-200">Personal Information</h3>
+        <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-8 mb-24">
+          <div className="flex items-center justify-between mb-6 md:mb-8 pb-4 border-b border-gray-200">
+            <h3 className="text-lg font-bold text-gray-900">Personal Information</h3>
+            {!isEditing && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="bg-red-50 text-red-700 px-3 md:px-4 py-2 rounded-lg font-semibold hover:bg-red-100 transition flex items-center gap-2 text-xs md:text-sm"
+              >
+                <Edit className="w-4 h-4" /> Edit Profile
+              </button>
+            )}
+          </div>
 
-          <div className="space-y-8">
+          <div className="space-y-6 md:space-y-8">
             {/* Row 1: Full Name and Email */}
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-3">Full Name</label>
+                <label className="block text-sm font-medium text-gray-900 mb-2 md:mb-3">Full Name</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-50 text-gray-900"
+                  disabled={!isEditing}
+                  className={`w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent text-gray-900 ${!isEditing ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50'}`}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-3">Email Address</label>
+                <label className="block text-sm font-medium text-gray-900 mb-2 md:mb-3">Email Address</label>
                 <input
                   type="email"
                   value={email}
                   readOnly
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-100 cursor-not-allowed text-gray-900"
+                  disabled
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg bg-gray-100 cursor-not-allowed text-gray-900"
                 />
               </div>
             </div>
 
             {/* Row 2: Blood Group and Phone */}
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-3">Blood Group</label>
+                <label className="block text-sm font-medium text-gray-900 mb-2 md:mb-3">Blood Group</label>
                 <select
                   value={bloodGroup}
                   onChange={(e) => setBloodGroup(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-50 appearance-none cursor-pointer text-gray-900"
+                  disabled={!isEditing}
+                  className={`w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent appearance-none text-gray-900 ${!isEditing ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50 cursor-pointer'}`}
                 >
                   <option value="">Select</option>
                   <option value="A+">A Positive (A+)</option>
@@ -179,24 +221,26 @@ export default function DonorProfilePage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-3">Phone Number</label>
+                <label className="block text-sm font-medium text-gray-900 mb-2 md:mb-3">Phone Number</label>
                 <input
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-50 text-gray-900"
+                  disabled={!isEditing}
+                  className={`w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent text-gray-900 ${!isEditing ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50'}`}
                 />
               </div>
             </div>
 
             {/* Row 3: District and Upazila */}
-            <div className="grid grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-3">District</label>
+                <label className="block text-sm font-medium text-gray-900 mb-2 md:mb-3">District</label>
                 <select
                   value={district}
                   onChange={(e) => setDistrict(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-50 appearance-none cursor-pointer text-gray-900"
+                  disabled={!isEditing}
+                  className={`w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent appearance-none text-gray-900 capitalize ${!isEditing ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50 cursor-pointer'}`}
                 >
                   <option value="">Select</option>
                   <option value="dhaka">Dhaka</option>
@@ -206,11 +250,12 @@ export default function DonorProfilePage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-3">Upazila</label>
+                <label className="block text-sm font-medium text-gray-900 mb-2 md:mb-3">Upazila</label>
                 <select
                   value={upazila}
                   onChange={(e) => setUpazila(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent bg-gray-50 appearance-none cursor-pointer text-gray-900"
+                  disabled={!isEditing}
+                  className={`w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent appearance-none text-gray-900 capitalize ${!isEditing ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50 cursor-pointer'}`}
                 >
                   <option value="">Select</option>
                   <option value="gulshan">Gulshan</option>
@@ -223,13 +268,38 @@ export default function DonorProfilePage() {
           </div>
 
           {/* Save Button */}
-          <div className="mt-8 pt-8 border-t border-gray-200 flex justify-end">
-            <button className="bg-red-700 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-800 transition">
-              Save Changes
-            </button>
-          </div>
+          {isEditing && (
+            <div className="mt-6 md:mt-8 pt-6 md:pt-8 border-t border-gray-200 flex flex-col sm:flex-row justify-end gap-3 md:gap-4">
+              <button
+                onClick={() => {
+                  setIsEditing(false);
+                  fetchProfile();
+                }}
+                disabled={isSaving}
+                className="bg-gray-100 text-gray-700 px-8 py-3 rounded-lg font-semibold hover:bg-gray-200 transition disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={isSaving}
+                className="bg-red-700 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-800 transition flex items-center justify-center gap-2 disabled:opacity-70 w-full sm:w-auto"
+              >
+                {isSaving && <Loader2 className="w-5 h-5 animate-spin" />}
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-24 right-4 md:right-8 bg-green-50 text-green-700 px-6 py-3 rounded-lg shadow-lg border border-green-200 z-[70] flex items-center gap-2 animate-in slide-in-from-top-2 duration-300">
+          <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white shrink-0">✓</div>
+          <p className="font-semibold text-sm">{toastMessage}</p>
+        </div>
+      )}
     </div>
   )
 }

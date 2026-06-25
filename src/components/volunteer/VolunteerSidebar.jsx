@@ -2,28 +2,66 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BarChart3, AlertCircle, User, Droplet } from 'lucide-react'
+import { useState } from 'react'
+import { Home, BarChart3, AlertCircle, User, Droplet, Menu, X, LogOut } from 'lucide-react'
+import { useAuth } from '@/context/AuthContext'
 
 export function VolunteerSidebar() {
     const pathname = usePathname()
+    const { logout } = useAuth()
+    const [isOpen, setIsOpen] = useState(false)
 
     const navItems = [
+        { href: '/', icon: Home, label: 'Home' },
         { href: '/volunteer', icon: BarChart3, label: 'Dashboard' },
         { href: '/volunteer/all-blood-donation-request', icon: AlertCircle, label: 'All Requests' },
+        { href: '/volunteer/create-request', icon: AlertCircle, label: 'Create Request' },
+        { href: '/volunteer/my-requests', icon: BarChart3, label: 'My Requests' },
         { href: '/volunteer/profile', icon: User, label: 'Profile' },
     ]
 
     return (
-        <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-200 flex flex-col py-6 px-4 z-50">
-            <div className="flex items-center gap-3 mb-8">
-                <div className="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center text-white">
-                    <Droplet className="w-6 h-6" fill="currentColor" />
+        <>
+            {/* Global Mobile Header */}
+            <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 z-30">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center text-white">
+                        <Droplet className="w-5 h-5" fill="currentColor" />
+                    </div>
+                    <span className="font-bold text-amber-600">LifeFlow Volunteer</span>
                 </div>
-                <div>
-                    <h1 className="text-sm font-bold text-amber-600">LifeFlow Volunteer</h1>
-                    <p className="text-xs text-gray-600">Support Panel</p>
-                </div>
+                <button 
+                    onClick={() => setIsOpen(true)}
+                    className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                    <Menu className="w-6 h-6" />
+                </button>
             </div>
+
+            {/* Mobile Overlay */}
+            {isOpen && (
+                <div 
+                    className="md:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity"
+                    onClick={() => setIsOpen(false)}
+                />
+            )}
+
+            <aside className={`fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-200 flex flex-col py-6 px-4 z-50 transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center text-white shrink-0">
+                            <Droplet className="w-6 h-6" fill="currentColor" />
+                        </div>
+                        <div>
+                            <h1 className="text-sm font-bold text-amber-600 truncate">LifeFlow Volunteer</h1>
+                            <p className="text-xs text-gray-600">Support Panel</p>
+                        </div>
+                    </div>
+                    {/* Close button on mobile */}
+                    <button onClick={() => setIsOpen(false)} className="md:hidden text-gray-400 hover:text-gray-600 p-1">
+                        <X className="w-6 h-6" />
+                    </button>
+                </div>
 
             <nav className="flex-grow space-y-1">
                 {navItems.map((item) => {
@@ -31,7 +69,8 @@ export function VolunteerSidebar() {
                     return (
                         <Link 
                             key={item.label}
-                            href={item.href} 
+                            href={item.href}
+                            onClick={() => setIsOpen(false)} 
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                                 isActive 
                                     ? 'bg-amber-50 text-amber-600 border-l-4 border-amber-500 rounded-r-lg font-semibold' 
@@ -46,11 +85,12 @@ export function VolunteerSidebar() {
             </nav>
 
             <div className="border-t border-gray-200 pt-6">
-                <Link href="/login" className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+                <button onClick={() => { setIsOpen(false); logout(); }} className="flex w-full items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
                     <User className="w-5 h-5" />
                     Logout
-                </Link>
+                </button>
             </div>
         </aside>
+        </>
     )
 }

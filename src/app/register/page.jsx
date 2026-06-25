@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Camera, ArrowRight } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
@@ -15,6 +15,39 @@ export default function Register() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [passwordError, setPasswordError] = useState('')
+
+  const [divisions, setDivisions] = useState([])
+  const [districts, setDistricts] = useState([])
+  const [upazilas, setUpazilas] = useState([])
+  const [selectedDivision, setSelectedDivision] = useState('')
+  const [selectedDistrict, setSelectedDistrict] = useState('')
+  const [selectedUpazila, setSelectedUpazila] = useState('')
+
+  useEffect(() => {
+    fetch('/divisions.json')
+      .then(res => res.json())
+      .then(data => {
+        const divData = data.find(item => item.type === 'table' && item.name === 'divisions')
+        if (divData) setDivisions(divData.data)
+      })
+      .catch(err => console.error("Error loading divisions:", err))
+
+    fetch('/districts.json')
+      .then(res => res.json())
+      .then(data => {
+        const distData = data.find(item => item.type === 'table' && item.name === 'districts')
+        if (distData) setDistricts(distData.data)
+      })
+      .catch(err => console.error("Error loading districts:", err))
+
+    fetch('/upazilas.json')
+      .then(res => res.json())
+      .then(data => {
+        const upaData = data.find(item => item.type === 'table' && item.name === 'upazilas')
+        if (upaData) setUpazilas(upaData.data)
+      })
+      .catch(err => console.error("Error loading upazilas:", err))
+  }, [])
 
   const handleImageUpload = (e) => {
     const file = e.target.files?.[0]
@@ -185,35 +218,79 @@ export default function Register() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">District</label>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Division</label>
                 <select
-                  name="district"
                   required
+                  value={selectedDivision}
+                  onChange={(e) => {
+                    setSelectedDivision(e.target.value)
+                    setSelectedDistrict('')
+                    setSelectedUpazila('') 
+                  }}
                   className="w-full h-10 sm:h-11 px-2 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm text-gray-900"
                 >
-                  <option value="">Select</option>
-                  <option value="dhaka">Dhaka</option>
-                  <option value="chattogram">Chattogram</option>
-                  <option value="sylhet">Sylhet</option>
-                  <option value="rajshahi">Rajshahi</option>
+                  <option value="">Select Division</option>
+                  {divisions.map((div) => (
+                    <option key={div.id} value={div.name}>
+                      {div.name}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
 
-            {/* Upazila */}
-            <div>
-              <label className="block text-sm font-medium text-gray-900 mb-2">Upazila</label>
-              <select
-                name="upazila"
-                required
-                className="w-full h-10 sm:h-11 px-3 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm text-gray-900"
-              >
-                <option value="">Select Upazila</option>
-                <option value="gulshan">Gulshan</option>
-                <option value="dhanmondi">Dhanmondi</option>
-                <option value="uttara">Uttara</option>
-                <option value="mirpur">Mirpur</option>
-              </select>
+            {/* District and Upazila */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-3 sm:mt-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">District</label>
+                <select
+                  name="district"
+                  required
+                  value={selectedDistrict}
+                  onChange={(e) => {
+                    setSelectedDistrict(e.target.value)
+                    setSelectedUpazila('')
+                  }}
+                  disabled={!selectedDivision}
+                  className="w-full h-10 sm:h-11 px-3 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm text-gray-900 disabled:opacity-50 disabled:bg-gray-50"
+                >
+                  <option value="">Select District</option>
+                  {districts
+                    .filter((dist) => {
+                      const div = divisions.find(d => d.name === selectedDivision)
+                      return div && dist.division_id === div.id
+                    })
+                    .map((dist) => (
+                      <option key={dist.id} value={dist.name}>
+                        {dist.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">Upazila</label>
+                <select
+                  name="upazila"
+                  required
+                  value={selectedUpazila}
+                  onChange={(e) => setSelectedUpazila(e.target.value)}
+                  disabled={!selectedDistrict}
+                  className="w-full h-10 sm:h-11 px-3 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm text-gray-900 disabled:opacity-50 disabled:bg-gray-50"
+                >
+                  <option value="">Select Upazila</option>
+                  {upazilas
+                    .filter((upa) => {
+                      const dist = districts.find(d => d.name === selectedDistrict)
+                      return dist && upa.district_id === dist.id
+                    })
+                    .map((upa) => (
+                      <option key={upa.id} value={upa.name}>
+                        {upa.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
             </div>
 
             {/* Password */}
