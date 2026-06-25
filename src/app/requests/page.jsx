@@ -31,8 +31,39 @@ export default function ActiveRequests() {
   const itemsPerPage = 6
 
   const [filterBloodGroup, setFilterBloodGroup] = useState('All Groups')
-  const [filterDistrict, setFilterDistrict] = useState('All Districts')
-  const [filterUpazila, setFilterUpazila] = useState('All Upazilas')
+  const [filterDivision, setFilterDivision] = useState('')
+  const [filterDistrict, setFilterDistrict] = useState('')
+  const [filterUpazila, setFilterUpazila] = useState('')
+
+  const [divisions, setDivisions] = useState([])
+  const [districts, setDistricts] = useState([])
+  const [upazilas, setUpazilas] = useState([])
+
+  useEffect(() => {
+    fetch('/divisions.json')
+      .then(res => res.json())
+      .then(data => {
+        const divData = data.find(item => item.type === 'table' && item.name === 'divisions')
+        if (divData) setDivisions(divData.data)
+      })
+      .catch(err => console.error("Error loading divisions:", err))
+
+    fetch('/districts.json')
+      .then(res => res.json())
+      .then(data => {
+        const distData = data.find(item => item.type === 'table' && item.name === 'districts')
+        if (distData) setDistricts(distData.data)
+      })
+      .catch(err => console.error("Error loading districts:", err))
+
+    fetch('/upazilas.json')
+      .then(res => res.json())
+      .then(data => {
+        const upaData = data.find(item => item.type === 'table' && item.name === 'upazilas')
+        if (upaData) setUpazilas(upaData.data)
+      })
+      .catch(err => console.error("Error loading upazilas:", err))
+  }, [])
 
   const handlePostRequestClick = () => {
     if (!user) {
@@ -61,8 +92,12 @@ export default function ActiveRequests() {
 
   const filteredRequests = requests.filter(req => {
     if (filterBloodGroup !== 'All Groups' && req.bloodGroup !== filterBloodGroup) return false;
-    if (filterDistrict !== 'All Districts' && req.district !== filterDistrict) return false;
-    if (filterUpazila !== 'All Upazilas' && req.upazila !== filterUpazila) return false;
+    if (filterDistrict !== '' && req.district !== filterDistrict) return false;
+    if (filterUpazila !== '' && req.upazila !== filterUpazila) return false;
+    if (filterDivision !== '' && filterDistrict === '') {
+      const validDistricts = districts.filter(d => d.division_id === filterDivision).map(d => d.name);
+      if (!validDistricts.includes(req.district)) return false;
+    }
     return true;
   });
 
@@ -87,7 +122,7 @@ export default function ActiveRequests() {
             </div>
 
             <div className="bg-white border border-gray-300 rounded-xl p-4 mb-8 shadow-sm">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Blood Group</label>
                   <select 
@@ -108,16 +143,42 @@ export default function ActiveRequests() {
                 </div>
 
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Division</label>
+                  <select 
+                    value={filterDivision}
+                    onChange={(e) => {
+                      setFilterDivision(e.target.value);
+                      setFilterDistrict('');
+                      setFilterUpazila('');
+                      setCurrentPage(1);
+                    }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent"
+                  >
+                    <option value="">All Divisions</option>
+                    {divisions.map(div => (
+                      <option key={div.id} value={div.id}>{div.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">District</label>
                   <select 
                     value={filterDistrict}
-                    onChange={(e) => { setFilterDistrict(e.target.value); setCurrentPage(1); }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent"
+                    onChange={(e) => {
+                      setFilterDistrict(e.target.value);
+                      setFilterUpazila('');
+                      setCurrentPage(1);
+                    }}
+                    disabled={!filterDivision}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400"
                   >
-                    <option>All Districts</option>
-                    <option>Dhaka</option>
-                    <option>Chittagong</option>
-                    <option>Sylhet</option>
+                    <option value="">All Districts</option>
+                    {districts
+                      .filter(dist => dist.division_id === filterDivision)
+                      .map(dist => (
+                        <option key={dist.id} value={dist.name}>{dist.name}</option>
+                      ))}
                   </select>
                 </div>
 
@@ -126,12 +187,15 @@ export default function ActiveRequests() {
                   <select 
                     value={filterUpazila}
                     onChange={(e) => { setFilterUpazila(e.target.value); setCurrentPage(1); }}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent"
+                    disabled={!filterDistrict}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400"
                   >
-                    <option>All Upazilas</option>
-                    <option>Dhaka</option>
-                    <option>Chittagong</option>
-                    <option>Sylhet</option>
+                    <option value="">All Upazilas</option>
+                    {upazilas
+                      .filter(upa => upa.district_id === districts.find(d => d.name === filterDistrict)?.id)
+                      .map(upa => (
+                        <option key={upa.id} value={upa.name}>{upa.name}</option>
+                      ))}
                   </select>
                 </div>
               </div>

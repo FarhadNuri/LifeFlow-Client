@@ -1,12 +1,45 @@
 'use client'
 
 import { Search, AlertCircle, Users, Bell } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function SearchDonors() {
   const [donors, setDonors] = useState([])
   const [loading, setLoading] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
+
+  const [divisions, setDivisions] = useState([])
+  const [districts, setDistricts] = useState([])
+  const [upazilas, setUpazilas] = useState([])
+  const [selectedDivision, setSelectedDivision] = useState('')
+  const [selectedDistrict, setSelectedDistrict] = useState('')
+  const [selectedUpazila, setSelectedUpazila] = useState('')
+
+  useEffect(() => {
+    fetch('/divisions.json')
+      .then(res => res.json())
+      .then(data => {
+        const divData = data.find(item => item.type === 'table' && item.name === 'divisions')
+        if (divData) setDivisions(divData.data)
+      })
+      .catch(err => console.error("Error loading divisions:", err))
+
+    fetch('/districts.json')
+      .then(res => res.json())
+      .then(data => {
+        const distData = data.find(item => item.type === 'table' && item.name === 'districts')
+        if (distData) setDistricts(distData.data)
+      })
+      .catch(err => console.error("Error loading districts:", err))
+
+    fetch('/upazilas.json')
+      .then(res => res.json())
+      .then(data => {
+        const upaData = data.find(item => item.type === 'table' && item.name === 'upazilas')
+        if (upaData) setUpazilas(upaData.data)
+      })
+      .catch(err => console.error("Error loading upazilas:", err))
+  }, [])
 
   const handleSearch = async (e) => {
     e.preventDefault()
@@ -21,8 +54,8 @@ export default function SearchDonors() {
     const upa = formData.get('upazila')
 
     if (bg && bg !== 'Select Group') params.append('bloodGroup', bg)
-    if (dist && dist !== 'Select District') params.append('district', dist)
-    if (upa && upa !== 'Select Upazila') params.append('upazila', upa)
+    if (dist && dist !== '') params.append('district', dist)
+    if (upa && upa !== '') params.append('upazila', upa)
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/donors?${params.toString()}`)
@@ -54,7 +87,7 @@ export default function SearchDonors() {
 
             {/* Search Form Card */}
             <div className="bg-white border border-gray-300 rounded-2xl p-6 md:p-8 shadow-sm mb-8">
-              <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6 items-end">
+              <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-5 gap-4 md:gap-6 items-end">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Blood Group</label>
                   <select name="bloodGroup" className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent">
@@ -71,24 +104,59 @@ export default function SearchDonors() {
                 </div>
 
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Division</label>
+                  <select 
+                    value={selectedDivision}
+                    onChange={(e) => {
+                      setSelectedDivision(e.target.value);
+                      setSelectedDistrict('');
+                      setSelectedUpazila('');
+                    }}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent"
+                  >
+                    <option value="">Select Division</option>
+                    {divisions.map(div => (
+                      <option key={div.id} value={div.id}>{div.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">District</label>
-                  <select name="district" className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent">
-                    <option value="Select District">Select District</option>
-                    <option value="dhaka">Dhaka</option>
-                    <option value="chattogram">Chattogram</option>
-                    <option value="sylhet">Sylhet</option>
-                    <option value="rajshahi">Rajshahi</option>
+                  <select 
+                    name="district"
+                    value={selectedDistrict}
+                    onChange={(e) => {
+                      setSelectedDistrict(e.target.value);
+                      setSelectedUpazila('');
+                    }}
+                    disabled={!selectedDivision}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400"
+                  >
+                    <option value="">Select District</option>
+                    {districts
+                      .filter(dist => dist.division_id === selectedDivision)
+                      .map(dist => (
+                        <option key={dist.id} value={dist.name}>{dist.name}</option>
+                      ))}
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Upazila</label>
-                  <select name="upazila" className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent">
-                    <option value="Select Upazila">Select Upazila</option>
-                    <option value="gulshan">Gulshan</option>
-                    <option value="dhanmondi">Dhanmondi</option>
-                    <option value="uttara">Uttara</option>
-                    <option value="mirpur">Mirpur</option>
+                  <select 
+                    name="upazila"
+                    value={selectedUpazila}
+                    onChange={(e) => setSelectedUpazila(e.target.value)}
+                    disabled={!selectedDistrict}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400"
+                  >
+                    <option value="">Select Upazila</option>
+                    {upazilas
+                      .filter(upa => upa.district_id === districts.find(d => d.name === selectedDistrict)?.id)
+                      .map(upa => (
+                        <option key={upa.id} value={upa.name}>{upa.name}</option>
+                      ))}
                   </select>
                 </div>
 
