@@ -42,7 +42,7 @@ const VolunteerDashboard = () => {
     try {
       await new Promise(r => setTimeout(r, 1000)); // Artificial delay for loader visibility
       const token = localStorage.getItem('token');
-      const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/volunteer/requests/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -69,7 +69,7 @@ const VolunteerDashboard = () => {
     try {
       await new Promise(r => setTimeout(r, 1500)); // Artificial delay for loader visibility
       const token = localStorage.getItem('token');
-      const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/volunteer/requests/${editModalData._id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -103,7 +103,7 @@ const VolunteerDashboard = () => {
       if (!user?.id) return;
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/volunteer/my-requests/${user.id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

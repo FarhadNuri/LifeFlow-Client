@@ -25,7 +25,7 @@ export default function SearchDonors() {
     if (upa && upa !== 'Select Upazila') params.append('upazila', upa)
 
     try {
-      const res = await fetch(${process.env.NEXT_PUBLIC_API_URL})
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/donors?${params.toString()}`)
       if (res.ok) {
         const data = await res.json()
         setDonors(data)

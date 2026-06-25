@@ -30,7 +30,7 @@ export default function AdminRequests() {
     try {
       await new Promise(resolve => setTimeout(resolve, 3000));
       const token = localStorage.getItem('token');
-      const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/requests/${deleteModalData._id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -54,7 +54,7 @@ export default function AdminRequests() {
     try {
       await new Promise(resolve => setTimeout(resolve, 3000));
       const token = localStorage.getItem('token');
-      const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/requests/${editModalData._id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -88,7 +88,7 @@ export default function AdminRequests() {
     const fetchRequests = async () => {
       try {
         const token = localStorage.getItem('token')
-        const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/requests`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -109,7 +109,7 @@ export default function AdminRequests() {
   const updateStatus = async (requestId, newStatus) => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/requests/${requestId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

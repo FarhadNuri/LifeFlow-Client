@@ -44,7 +44,7 @@ export default function VolunteerRequests() {
     try {
       setLoading(true)
       const token = localStorage.getItem('token')
-      const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/volunteer/requests`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -72,7 +72,7 @@ export default function VolunteerRequests() {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/volunteer/update-status/${requestId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

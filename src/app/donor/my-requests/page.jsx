@@ -32,7 +32,7 @@ const DonorDashboard = () => {
     try {
       await new Promise(r => setTimeout(r, 1000));
       const token = localStorage.getItem('token');
-      const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/donor/requests/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -59,7 +59,7 @@ const DonorDashboard = () => {
     try {
       await new Promise(r => setTimeout(r, 1000));
       const token = localStorage.getItem('token');
-      const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/donor/requests/${editModalData._id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -93,7 +93,7 @@ const DonorDashboard = () => {
       if (!user?.id) return;
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/donor/my-requests/${user.id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

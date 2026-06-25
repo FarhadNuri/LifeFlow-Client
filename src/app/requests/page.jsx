@@ -47,7 +47,7 @@ export default function ActiveRequests() {
   useEffect(() => {
     const fetchRequests = async () => {
       try {
-        const res = await fetch(${process.env.NEXT_PUBLIC_API_URL})
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/requests`)
         if (res.ok) {
           const data = await res.json()
           setRequests(data)

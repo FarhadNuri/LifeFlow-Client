@@ -62,7 +62,7 @@ export default function CreateRequest() {
       await new Promise(resolve => setTimeout(resolve, 2500))
 
       const token = localStorage.getItem('token')
-      const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/donor/requests`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

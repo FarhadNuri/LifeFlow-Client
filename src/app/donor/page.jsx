@@ -24,14 +24,14 @@ const DonorDashboard = () => {
     const fetchData = async () => {
       try {
         // Fetch global requests
-        const globalRes = await fetch(${process.env.NEXT_PUBLIC_API_URL});
+        const globalRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/requests`);
         if (globalRes.ok) {
           const globalData = await globalRes.json();
           setRequests(globalData);
         }
 
         // Fetch total funds
-        const donationsRes = await fetch(${process.env.NEXT_PUBLIC_API_URL})
+        const donationsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/donations`)
         if (donationsRes.ok) {
           const donationsData = await donationsRes.json()
           const sum = donationsData.reduce((acc, curr) => acc + Number(curr.amount.replace(/[^0-9.-]+/g, "")), 0)
@@ -41,7 +41,7 @@ const DonorDashboard = () => {
         // Fetch personal requests count if user is logged in
         if (user?.id) {
           const token = localStorage.getItem('token');
-          const personalRes = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+          const personalRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/donor/my-requests/${user.id}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (personalRes.ok) {

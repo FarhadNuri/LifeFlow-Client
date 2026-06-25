@@ -21,17 +21,17 @@ export default function VolunteerDashboard() {
                 const token = localStorage.getItem('token')
 
                 // Fetch donors
-                const donorsRes = await fetch(${process.env.NEXT_PUBLIC_API_URL})
+                const donorsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/donors`)
                 const donorsData = await donorsRes.json()
 
                 // Fetch requests
-                const requestsRes = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+                const requestsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/volunteer/requests`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
                 const requestsData = await requestsRes.json()
 
                 // Fetch donations
-                const donationsRes = await fetch(${process.env.NEXT_PUBLIC_API_URL})
+                const donationsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/donations`)
                 const donationsData = await donationsRes.json()
                 const sum = donationsData.reduce((acc, curr) => acc + Number(curr.amount.replace(/[^0-9.-]+/g, "")), 0)
 

@@ -20,9 +20,9 @@ export default function AdminDashboard() {
         const headers = { 'Authorization': `Bearer ${token}` }
         
         const [requestsRes, usersRes, donationsRes] = await Promise.all([
-          fetch(${process.env.NEXT_PUBLIC_API_URL}, { headers }),
-          fetch(${process.env.NEXT_PUBLIC_API_URL}, { headers }),
-          fetch(${process.env.NEXT_PUBLIC_API_URL})
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/requests`, { headers }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users`, { headers }),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/donations`)
         ])
 
         if (requestsRes.ok) {

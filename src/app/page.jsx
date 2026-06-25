@@ -4,7 +4,7 @@ import { Droplet, Users, Heart, AlertCircle, CheckCircle2, Shield, MessageCircle
 export default async function Home() {
   let activeRequests = [];
   try {
-    const res = await fetch(${process.env.NEXT_PUBLIC_API_URL}, { cache: "no-store" });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/requests`, { cache: "no-store" });
     if (res.ok) {
       activeRequests = await res.json();
     }

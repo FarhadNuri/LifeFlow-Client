@@ -26,7 +26,7 @@ export default function AdminUsers() {
     const fetchUsers = async () => {
       try {
         const token = localStorage.getItem('token')
-        const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -50,7 +50,7 @@ export default function AdminUsers() {
     try {
       await new Promise(resolve => setTimeout(resolve, 3000));
       const token = localStorage.getItem('token');
-      const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -73,7 +73,7 @@ export default function AdminUsers() {
     try {
       await new Promise(resolve => setTimeout(resolve, 3000));
       const token = localStorage.getItem('token');
-      const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users/${editModalData._id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

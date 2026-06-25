@@ -32,7 +32,7 @@ export default function Funding() {
   useEffect(() => {
     const fetchDonations = async () => {
       try {
-        const res = await fetch(${process.env.NEXT_PUBLIC_API_URL})
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/donations`)
         if (res.ok) {
           const dbDonations = await res.json()
           setDonors([...dbDonations, ...initialMockDonors])
@@ -68,7 +68,7 @@ export default function Funding() {
       setLoading(true)
 
       const token = localStorage.getItem('token');
-      const res = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/create-checkout-session`, {
         method: "POST",
         headers: { 
             "Content-Type": "application/json",

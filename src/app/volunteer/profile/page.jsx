@@ -44,7 +44,7 @@ export default function VolunteerProfilePage() {
         return
       }
 
-      const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/volunteer/profile/${userId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -77,7 +77,7 @@ export default function VolunteerProfilePage() {
       const token = localStorage.getItem('token')
       const userId = user?.id || user?.sub || user?._id
       
-      const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/volunteer/profile/${userId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

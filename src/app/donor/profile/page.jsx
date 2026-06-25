@@ -43,7 +43,7 @@ export default function DonorProfilePage() {
         return
       }
 
-      const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/donor/profile/${userId}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -76,7 +76,7 @@ export default function DonorProfilePage() {
       await new Promise(r => setTimeout(r, 1000))
       const token = localStorage.getItem('token')
       const userId = user?.id || user?.sub || user?._id
-      const response = await fetch(${process.env.NEXT_PUBLIC_API_URL}, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/donor/profile/${userId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
