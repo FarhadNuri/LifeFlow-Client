@@ -41,7 +41,12 @@ export default function ActiveRequests() {
 
   const [selectedRequest, setSelectedRequest] = useState(null)
   const [isDonating, setIsDonating] = useState(false)
-  const [donateMessage, setDonateMessage] = useState('')
+  const [toastMessage, setToastMessage] = useState('')
+
+  const showToast = (message) => {
+    setToastMessage(message)
+    setTimeout(() => setToastMessage(''), 5000)
+  }
 
   useEffect(() => {
     fetch('/divisions.json')
@@ -99,13 +104,13 @@ export default function ActiveRequests() {
       router.push('/login')
     } else {
       setSelectedRequest(request)
-      setDonateMessage('')
+      setToastMessage('')
     }
   }
 
   const handleDonate = async (requestId) => {
     setIsDonating(true)
-    setDonateMessage('')
+    setToastMessage('')
     try {
       const token = localStorage.getItem('token')
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/requests/${requestId}/donate`, {
@@ -117,15 +122,15 @@ export default function ActiveRequests() {
       
       const data = await res.json()
       if (res.ok) {
-        setDonateMessage('Donation request accepted! The requester will be notified.')
+        showToast('Donation request accepted! The requester will be notified.')
         setRequests(prev => prev.filter(req => req._id !== requestId))
-        setTimeout(() => setSelectedRequest(null), 2000)
+        setTimeout(() => setSelectedRequest(null), 1000)
       } else {
-        setDonateMessage(data.message || 'Failed to process donation')
+        showToast(data.message || 'Failed to process donation')
       }
     } catch (error) {
       console.error('Error donating:', error)
-      setDonateMessage('An error occurred. Please try again later.')
+      showToast('An error occurred. Please try again later.')
     } finally {
       setIsDonating(false)
     }
@@ -322,6 +327,101 @@ export default function ActiveRequests() {
         <Plus className="w-6 h-6" />
         <span className="absolute bottom-16 right-0 bg-amber-900 text-white px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap">Post Request</span>
       </button>
+
+      {/* Details Modal */}
+      {selectedRequest && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-4 sm:p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+              <h2 className="text-xl font-bold text-gray-900">Request Details</h2>
+              <button onClick={() => setSelectedRequest(null)} className="text-gray-400 hover:text-gray-600 transition">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <div className="p-4 sm:p-6 overflow-y-auto grow">
+              <div className="flex items-center gap-4 mb-6">
+                <div className={`w-16 h-16 ${bloodTypeColors[selectedRequest.bloodGroup] || 'bg-gray-100 text-gray-700'} rounded-full flex items-center justify-center font-bold text-2xl`}>
+                  <span>{selectedRequest.bloodGroup}</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">{selectedRequest.donorName || selectedRequest.patientName}</h3>
+                  <p className="text-sm text-gray-600">Patient Name</p>
+                </div>
+              </div>
+
+              <div className="space-y-4 mb-6 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Hospital / Clinic</p>
+                  <p className="font-semibold text-gray-900">{selectedRequest.hospital}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">Location</p>
+                  <p className="font-semibold text-gray-900 capitalize">{selectedRequest.upazila}, {selectedRequest.district}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Date Needed</p>
+                    <p className="font-semibold text-gray-900">{selectedRequest.date}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500 mb-1">Time Needed</p>
+                    <p className="font-semibold text-gray-900">{selectedRequest.time}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500 mb-2">Message from requester</p>
+                <div className="bg-red-50 text-red-900 p-4 rounded-xl border border-red-100 text-sm">
+                  {selectedRequest.message || "No additional message provided."}
+                </div>
+              </div>
+
+              {toastMessage && !toastMessage.includes('accepted') && (
+                <div className={`mt-4 p-3 rounded-lg text-sm text-center bg-red-50 text-red-700 border border-red-200`}>
+                  {toastMessage}
+                </div>
+              )}
+            </div>
+
+            <div className="p-4 sm:p-6 border-t border-gray-100 bg-white">
+              <button 
+                onClick={() => handleDonate(selectedRequest._id)}
+                disabled={isDonating || toastMessage.includes('accepted')}
+                className="w-full bg-red-700 text-white py-4 rounded-xl font-bold text-lg hover:bg-red-800 transition shadow-xl shadow-red-900/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isDonating ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Processing...
+                  </>
+                ) : toastMessage.includes('accepted') ? (
+                  'Donation Registered ✓'
+                ) : (
+                  <>
+                    <Heart className="w-5 h-5" />
+                    Donate Blood
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && toastMessage.includes('accepted') && (
+        <div className="fixed top-24 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-xl flex items-center gap-3 z-50 animate-in fade-in slide-in-from-top-4">
+          <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center shrink-0">
+            <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <p className="font-semibold text-sm">{toastMessage}</p>
+        </div>
+      )}
+
     </div>
   )
 }
