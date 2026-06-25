@@ -83,8 +83,9 @@ export function AuthProvider({ children }) {
         throw new Error(data.error || 'Registration failed')
       }
 
-      localStorage.setItem('token', data.token)
-      setUser(data.user)
+      // Registration successful, but don't log them in automatically
+      // localStorage.setItem('token', data.token)
+      // setUser(data.user)
       return { success: true, user: data.user }
     } catch (error) {
       return { success: false, error: error.message }

@@ -110,7 +110,7 @@ export default function Register() {
     })
 
     if (result.success) {
-      router.push('/donor') // Redirect to donor dashboard after registration
+      router.push('/login') // Redirect to login page after registration
     } else {
       setError(result.error || 'Registration failed. Please try again.')
       setIsSubmitting(false)
