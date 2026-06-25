@@ -1,6 +1,6 @@
 'use client'
 
-import { MapPin, Calendar, Clock, Bookmark, ArrowRight, Heart, Filter, Plus } from 'lucide-react'
+import { MapPin, Calendar, Clock, Bookmark, ArrowRight, Heart, Filter, Plus, X, Loader2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useRouter } from 'next/navigation'
@@ -38,6 +38,10 @@ export default function ActiveRequests() {
   const [divisions, setDivisions] = useState([])
   const [districts, setDistricts] = useState([])
   const [upazilas, setUpazilas] = useState([])
+
+  const [selectedRequest, setSelectedRequest] = useState(null)
+  const [isDonating, setIsDonating] = useState(false)
+  const [donateMessage, setDonateMessage] = useState('')
 
   useEffect(() => {
     fetch('/divisions.json')
@@ -89,6 +93,43 @@ export default function ActiveRequests() {
     }
     fetchRequests()
   }, [])
+
+  const handleViewDetails = (request) => {
+    if (!user) {
+      router.push('/login')
+    } else {
+      setSelectedRequest(request)
+      setDonateMessage('')
+    }
+  }
+
+  const handleDonate = async (requestId) => {
+    setIsDonating(true)
+    setDonateMessage('')
+    try {
+      const token = localStorage.getItem('token')
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/requests/${requestId}/donate`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      
+      const data = await res.json()
+      if (res.ok) {
+        setDonateMessage('Donation request accepted! The requester will be notified.')
+        setRequests(prev => prev.filter(req => req._id !== requestId))
+        setTimeout(() => setSelectedRequest(null), 2000)
+      } else {
+        setDonateMessage(data.message || 'Failed to process donation')
+      }
+    } catch (error) {
+      console.error('Error donating:', error)
+      setDonateMessage('An error occurred. Please try again later.')
+    } finally {
+      setIsDonating(false)
+    }
+  }
 
   const filteredRequests = requests.filter(req => {
     if (filterBloodGroup !== 'All Groups' && req.bloodGroup !== filterBloodGroup) return false;
@@ -242,7 +283,10 @@ export default function ActiveRequests() {
                     </div>
 
                     <div className="pt-4 border-t border-gray-200">
-                      <button className="w-full border-2 border-red-700 text-red-700 py-3 rounded-lg font-bold hover:bg-red-50 transition flex items-center justify-center gap-2">
+                      <button 
+                        onClick={() => handleViewDetails(request)}
+                        className="w-full border-2 border-red-700 text-red-700 py-3 rounded-lg font-bold hover:bg-red-50 transition flex items-center justify-center gap-2"
+                      >
                         View Details
                         <ArrowRight className="w-4 h-4" />
                       </button>
@@ -256,26 +300,20 @@ export default function ActiveRequests() {
               )}
             </div>
 
-            <div className="flex justify-center items-center gap-2 mb-8">
-              <button className="p-2 hover:bg-gray-100 rounded transition">
-                <ArrowRight className="w-5 h-5 text-gray-400 rotate-180" />
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => (
-                <button
-                  key={i + 1}
-                  onClick={() => setCurrentPage(i + 1)}
-                  className={`w-10 h-10 rounded-lg font-semibold transition ${currentPage === i + 1
-                    ? 'bg-red-700 text-white'
-                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
-              <button className="p-2 hover:bg-gray-100 rounded transition">
-                <ArrowRight className="w-5 h-5 text-gray-400" />
-              </button>
-            </div>
+            {totalPages > 1 && (
+              <div className="flex justify-center gap-2 mt-8">
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button
+                    key={i + 1}
+                    onClick={() => setCurrentPage(i + 1)}
+                    className={`w-10 h-10 rounded-lg font-medium transition ${currentPage === i + 1 ? 'bg-red-700 text-white' : 'bg-white text-gray-600 hover:bg-red-50 border border-gray-200'}`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+            )}
+
           </div>
         </section>
       </main>
