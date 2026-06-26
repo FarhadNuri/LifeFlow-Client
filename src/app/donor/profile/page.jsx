@@ -221,38 +221,7 @@ export default function DonorProfilePage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2 md:mb-3">District</label>
-                <select
-                  value={district}
-                  onChange={(e) => setDistrict(e.target.value)}
-                  disabled={!isEditing}
-                  className={`w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent appearance-none text-gray-900 capitalize ${!isEditing ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50 cursor-pointer'}`}
-                >
-                  <option value="">Select</option>
-                  <option value="dhaka">Dhaka</option>
-                  <option value="chattogram">Chattogram</option>
-                  <option value="sylhet">Sylhet</option>
-                  <option value="rajshahi">Rajshahi</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2 md:mb-3">Upazila</label>
-                <select
-                  value={upazila}
-                  onChange={(e) => setUpazila(e.target.value)}
-                  disabled={!isEditing}
-                  className={`w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent appearance-none text-gray-900 capitalize ${!isEditing ? 'bg-gray-100 cursor-not-allowed' : 'bg-gray-50 cursor-pointer'}`}
-                >
-                  <option value="">Select</option>
-                  <option value="gulshan">Gulshan</option>
-                  <option value="dhanmondi">Dhanmondi</option>
-                  <option value="uttara">Uttara</option>
-                  <option value="mirpur">Mirpur</option>
-                </select>
-              </div>
-            </div>
+
           </div>
 
           {isEditing && (
