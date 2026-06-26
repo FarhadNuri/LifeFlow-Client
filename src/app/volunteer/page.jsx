@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Download, Users, Wallet, Droplet, Loader2, ChevronLeft, ChevronRight, AlertCircle, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { useLocationData } from '@/hooks/useLocationData'
 
 export default function VolunteerDashboard() {
     const [donors, setDonors] = useState([])
@@ -12,25 +13,23 @@ export default function VolunteerDashboard() {
     const [currentPage, setCurrentPage] = useState(1)
     const [selectedRequest, setSelectedRequest] = useState(null)
     const [filterBloodGroup, setFilterBloodGroup] = useState('')
+    const [filterDivision, setFilterDivision] = useState('')
     const [filterDistrict, setFilterDistrict] = useState('')
     const [filterUpazila, setFilterUpazila] = useState('')
+    const { divisions, districts, upazilas } = useLocationData()
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
                 const token = localStorage.getItem('token')
-
-                // Fetch donors
                 const donorsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/donors`)
                 const donorsData = await donorsRes.json()
 
-                // Fetch requests
                 const requestsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/volunteer/requests`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 })
                 const requestsData = await requestsRes.json()
 
-                // Fetch donations
                 const donationsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/donations`)
                 const donationsData = await donationsRes.json()
                 const sum = donationsData.reduce((acc, curr) => acc + Number(curr.amount.replace(/[^0-9.-]+/g, "")), 0)
@@ -61,6 +60,10 @@ export default function VolunteerDashboard() {
     const filteredRequests = requests.filter(req => {
         if (filterBloodGroup && (req.bloodGroup || req.bloodType) !== filterBloodGroup) return false;
         const loc = (req.district || req.location || '').toLowerCase();
+        if (filterDivision && !filterDistrict) {
+            const validDistricts = districts.filter(d => d.division_id === filterDivision).map(d => d.name.toLowerCase());
+            if (!validDistricts.includes(loc)) return false;
+        }
         if (filterDistrict && loc !== filterDistrict.toLowerCase()) return false;
         if (filterUpazila && (req.upazila || '').toLowerCase() !== filterUpazila.toLowerCase()) return false;
         return true;
@@ -68,7 +71,6 @@ export default function VolunteerDashboard() {
 
     const itemsPerPage = 5
     const totalPages = Math.ceil(filteredRequests.length / itemsPerPage)
-    // Sort so newest requests come first
     const sortedRequests = [...filteredRequests].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
     const startIndex = (currentPage - 1) * itemsPerPage
     const recentActivity = sortedRequests.slice(startIndex, startIndex + itemsPerPage)
@@ -76,7 +78,6 @@ export default function VolunteerDashboard() {
     return (
         <>
             <main className="px-4 md:px-12 py-6 md:py-8 pb-24 md:pb-8">
-                {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8">
                     <div>
                         <h2 className="text-3xl font-bold text-gray-900">Volunteer Overview</h2>
@@ -84,9 +85,7 @@ export default function VolunteerDashboard() {
                     </div>
                 </div>
 
-                {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    {/* Total Donors */}
                     <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -100,7 +99,6 @@ export default function VolunteerDashboard() {
                         <p className="text-sm text-gray-600">Registered donors in system</p>
                     </div>
 
-                    {/* Total Funding (Mock) */}
                     <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
@@ -116,7 +114,6 @@ export default function VolunteerDashboard() {
                         <p className="text-sm text-gray-600">Life-saving contributions raised</p>
                     </div>
 
-                    {/* Active Requests */}
                     <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
@@ -132,9 +129,6 @@ export default function VolunteerDashboard() {
                     </div>
                 </div>
 
-
-
-                {/* Recent Activity Table */}
                 <div className="mt-8 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                     <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <h3 className="text-lg font-bold text-gray-900">Recent Global Activity</h3>
@@ -155,27 +149,40 @@ export default function VolunteerDashboard() {
                                 <option value="AB-">AB-</option>
                             </select>
                             <select
-                                value={filterDistrict}
-                                onChange={(e) => { setFilterDistrict(e.target.value); setCurrentPage(1); }}
+                                value={filterDivision}
+                                onChange={(e) => { setFilterDivision(e.target.value); setFilterDistrict(''); setFilterUpazila(''); setCurrentPage(1); }}
                                 className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white capitalize"
                             >
+                                <option value="">All Divisions</option>
+                                {divisions.map(div => (
+                                    <option key={div.id} value={div.id}>{div.name}</option>
+                                ))}
+                            </select>
+                            <select
+                                value={filterDistrict}
+                                onChange={(e) => { setFilterDistrict(e.target.value); setFilterUpazila(''); setCurrentPage(1); }}
+                                disabled={!filterDivision}
+                                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white capitalize disabled:bg-gray-100 disabled:text-gray-400"
+                            >
                                 <option value="">All Districts</option>
-                                <option value="dhaka">Dhaka</option>
-                                <option value="chattogram">Chattogram</option>
-                                <option value="sylhet">Sylhet</option>
-                                <option value="rajshahi">Rajshahi</option>
+                                {districts
+                                    .filter(dist => dist.division_id === filterDivision)
+                                    .map(dist => (
+                                        <option key={dist.id} value={dist.name}>{dist.name}</option>
+                                    ))}
                             </select>
                             <select
                                 value={filterUpazila}
                                 onChange={(e) => { setFilterUpazila(e.target.value); setCurrentPage(1); }}
-                                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white capitalize"
+                                disabled={!filterDistrict}
+                                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 bg-white capitalize disabled:bg-gray-100 disabled:text-gray-400"
                             >
                                 <option value="">All Upazilas</option>
-                                <option value="uttara">Uttara</option>
-                                <option value="banani">Banani</option>
-                                <option value="gulshan">Gulshan</option>
-                                <option value="dhanmondi">Dhanmondi</option>
-                                <option value="mirpur">Mirpur</option>
+                                {upazilas
+                                    .filter(upa => upa.district_id === districts.find(d => d.name === filterDistrict)?.id)
+                                    .map(upa => (
+                                        <option key={upa.id} value={upa.name}>{upa.name}</option>
+                                    ))}
                             </select>
                         </div>
                     </div>
@@ -237,7 +244,6 @@ export default function VolunteerDashboard() {
                             </tbody>
                         </table>
                     </div>
-                    {/* Pagination Controls */}
                     <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 flex items-center justify-center gap-2">
                         <button
                             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -267,7 +273,6 @@ export default function VolunteerDashboard() {
                     </div>
                 </div>
 
-                {/* Details Modal */}
                 {selectedRequest && (
                     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                         <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">

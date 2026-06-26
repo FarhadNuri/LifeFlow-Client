@@ -2,6 +2,7 @@
 
 import { Users, Filter, Download, Search, ChevronLeft, ChevronRight, Loader2, Eye, Edit, Trash2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { useLocationData } from '@/hooks/useLocationData'
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([])
@@ -11,8 +12,10 @@ export default function AdminUsers() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 3
   const [filterBloodGroup, setFilterBloodGroup] = useState('')
+  const [filterDivision, setFilterDivision] = useState('')
   const [filterDistrict, setFilterDistrict] = useState('')
   const [filterUpazila, setFilterUpazila] = useState('')
+  const { divisions, districts, upazilas } = useLocationData()
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [toastMessage, setToastMessage] = useState('')
@@ -110,6 +113,10 @@ export default function AdminUsers() {
   const filteredUsers = users.filter(user => {
     if (filterBloodGroup && (user.bloodGroup || user.bloodType) !== filterBloodGroup) return false;
     const loc = (user.district || user.location || '').toLowerCase();
+    if (filterDivision && !filterDistrict) {
+      const validDistricts = districts.filter(d => d.division_id === filterDivision).map(d => d.name.toLowerCase());
+      if (!validDistricts.includes(loc)) return false;
+    }
     if (filterDistrict && loc !== filterDistrict.toLowerCase()) return false;
     if (filterUpazila && (user.upazila || '').toLowerCase() !== filterUpazila.toLowerCase()) return false;
     return true;
@@ -123,7 +130,6 @@ export default function AdminUsers() {
 
   return (
     <main className="px-4 md:px-12 py-8 mt-16 md:mt-0">
-      {/* Header */}
       <div className="flex justify-between items-end mb-8">
         <div>
           <h2 className="text-3xl font-bold text-gray-900">User Management</h2>
@@ -132,7 +138,6 @@ export default function AdminUsers() {
 
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
           <div className="flex justify-between items-start mb-2">
@@ -168,7 +173,6 @@ export default function AdminUsers() {
         </div>
       </div>
 
-      {/* Search and Table */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 bg-white flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <h3 className="text-lg font-bold text-gray-900">All Users</h3>
@@ -189,27 +193,47 @@ export default function AdminUsers() {
               <option value="AB-">AB-</option>
             </select>
             <select
-              value={filterDistrict}
-              onChange={(e) => setFilterDistrict(e.target.value)}
+              value={filterDivision}
+              onChange={(e) => {
+                setFilterDivision(e.target.value);
+                setFilterDistrict('');
+                setFilterUpazila('');
+              }}
               className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-700 bg-white capitalize"
             >
+              <option value="">All Divisions</option>
+              {divisions.map(div => (
+                <option key={div.id} value={div.id}>{div.name}</option>
+              ))}
+            </select>
+            <select
+              value={filterDistrict}
+              onChange={(e) => {
+                setFilterDistrict(e.target.value);
+                setFilterUpazila('');
+              }}
+              disabled={!filterDivision}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-700 bg-white capitalize disabled:bg-gray-100 disabled:text-gray-400"
+            >
               <option value="">All Districts</option>
-              <option value="dhaka">Dhaka</option>
-              <option value="chattogram">Chattogram</option>
-              <option value="sylhet">Sylhet</option>
-              <option value="rajshahi">Rajshahi</option>
+              {districts
+                .filter(dist => dist.division_id === filterDivision)
+                .map(dist => (
+                  <option key={dist.id} value={dist.name}>{dist.name}</option>
+                ))}
             </select>
             <select
               value={filterUpazila}
               onChange={(e) => setFilterUpazila(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-700 bg-white capitalize"
+              disabled={!filterDistrict}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-700 bg-white capitalize disabled:bg-gray-100 disabled:text-gray-400"
             >
               <option value="">All Upazilas</option>
-              <option value="uttara">Uttara</option>
-              <option value="banani">Banani</option>
-              <option value="gulshan">Gulshan</option>
-              <option value="dhanmondi">Dhanmondi</option>
-              <option value="mirpur">Mirpur</option>
+              {upazilas
+                .filter(upa => upa.district_id === districts.find(d => d.name === filterDistrict)?.id)
+                .map(upa => (
+                  <option key={upa.id} value={upa.name}>{upa.name}</option>
+                ))}
             </select>
           </div>
         </div>
@@ -244,8 +268,8 @@ export default function AdminUsers() {
                 </tr>
               ) : (
                 currentUsers.map((user) => (
-                  <tr 
-                    key={user._id} 
+                  <tr
+                    key={user._id}
                     className="hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0"
                     onClick={() => setViewModalData(user)}
                   >
@@ -305,7 +329,7 @@ export default function AdminUsers() {
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
-          
+
           {Array.from({ length: totalPages }).map((_, idx) => (
             <button
               key={idx}
@@ -326,7 +350,6 @@ export default function AdminUsers() {
         </div>
       </div>
 
-      {/* View Modal */}
       {viewModalData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-lg">
@@ -340,7 +363,7 @@ export default function AdminUsers() {
               <p className="text-gray-900"><span className="font-semibold text-gray-700">Status:</span> {viewModalData.status || 'Active'}</p>
             </div>
             <div className="mt-6 flex justify-end gap-2">
-              <button 
+              <button
                 onClick={() => {
                   handleDelete(viewModalData._id)
                   setViewModalData(null)
@@ -350,7 +373,7 @@ export default function AdminUsers() {
                 <Trash2 className="w-4 h-4" />
                 Delete
               </button>
-              <button 
+              <button
                 onClick={() => {
                   setEditModalData(viewModalData)
                   setViewModalData(null)
@@ -366,7 +389,6 @@ export default function AdminUsers() {
         </div>
       )}
 
-      {/* Edit Modal */}
       {editModalData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl max-w-sm w-full p-6 shadow-lg">
@@ -407,7 +429,6 @@ export default function AdminUsers() {
         </div>
       )}
 
-      {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-24 right-4 md:right-8 bg-green-50 text-green-700 px-6 py-3 rounded-lg shadow-lg border border-green-200 z-[110] flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="w-2 h-2 rounded-full bg-green-500 shrink-0"></div>
@@ -415,7 +436,6 @@ export default function AdminUsers() {
         </div>
       )}
 
-      {/* Global Deleting Loader */}
       {isDeleting && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-white/50 backdrop-blur-sm">
           <div className="bg-white p-6 rounded-xl shadow-lg flex flex-col items-center gap-4">

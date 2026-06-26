@@ -7,6 +7,7 @@ export default function SearchDonors() {
   const [donors, setDonors] = useState([])
   const [loading, setLoading] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
+  const [visibleCount, setVisibleCount] = useState(6)
 
   const [divisions, setDivisions] = useState([])
   const [districts, setDistricts] = useState([])
@@ -45,22 +46,28 @@ export default function SearchDonors() {
     e.preventDefault()
     setHasSearched(true)
     setLoading(true)
+    setVisibleCount(6)
 
     const formData = new FormData(e.currentTarget)
     const params = new URLSearchParams()
 
     const bg = formData.get('bloodGroup')
-    const dist = formData.get('district')
-    const upa = formData.get('upazila')
 
     if (bg && bg !== 'Select Group') params.append('bloodGroup', bg)
-    if (dist && dist !== '') params.append('district', dist)
-    if (upa && upa !== '') params.append('upazila', upa)
+    if (selectedDistrict) params.append('district', selectedDistrict)
+    if (selectedUpazila) params.append('upazila', selectedUpazila)
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/donors?${params.toString()}`)
       if (res.ok) {
-        const data = await res.json()
+        let data = await res.json()
+        
+        // Filter by division on the frontend if division is selected but district is not
+        if (selectedDivision && !selectedDistrict) {
+          const validDistricts = districts.filter(d => d.division_id === selectedDivision).map(d => d.name)
+          data = data.filter(donor => validDistricts.includes(donor.district))
+        }
+        
         setDonors(data)
       }
     } catch (error) {
@@ -72,12 +79,9 @@ export default function SearchDonors() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Main Content */}
       <main className="grow">
-        {/* Hero Search Section */}
         <section className="py-8 md:py-12 px-4 md:px-12 bg-white">
           <div className="max-w-6xl mx-auto">
-            {/* Title Section */}
             <div className="mb-8">
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Find Life-Saving Donors</h1>
               <p className="text-lg text-gray-600 max-w-2xl">
@@ -85,7 +89,6 @@ export default function SearchDonors() {
               </p>
             </div>
 
-            {/* Search Form Card */}
             <div className="bg-white border border-gray-300 rounded-2xl p-6 md:p-8 shadow-sm mb-8">
               <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-5 gap-4 md:gap-6 items-end">
                 <div>
@@ -105,7 +108,7 @@ export default function SearchDonors() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Division</label>
-                  <select 
+                  <select
                     value={selectedDivision}
                     onChange={(e) => {
                       setSelectedDivision(e.target.value);
@@ -123,7 +126,7 @@ export default function SearchDonors() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">District</label>
-                  <select 
+                  <select
                     name="district"
                     value={selectedDistrict}
                     onChange={(e) => {
@@ -144,7 +147,7 @@ export default function SearchDonors() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Upazila</label>
-                  <select 
+                  <select
                     name="upazila"
                     value={selectedUpazila}
                     onChange={(e) => setSelectedUpazila(e.target.value)}
@@ -170,26 +173,37 @@ export default function SearchDonors() {
               </form>
             </div>
 
-            {/* Results Section */}
             {hasSearched && !loading && donors.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                {donors.map((donor) => (
-                  <div key={donor._id} className="bg-white border rounded-lg p-6 shadow-sm hover:shadow-md transition">
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className="w-14 h-14 bg-red-100 text-red-700 rounded-full flex items-center justify-center font-bold text-xl">
-                        {donor.bloodGroup}
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                  {donors.slice(0, visibleCount).map((donor) => (
+                    <div key={donor._id} className="bg-white border rounded-lg p-6 shadow-sm hover:shadow-md transition">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="w-14 h-14 bg-red-100 text-red-700 rounded-full flex items-center justify-center font-bold text-xl">
+                          {donor.bloodGroup}
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900">{donor.name}</h3>
+                          <span className="text-sm text-gray-500 capitalize">{donor.upazila}, {donor.district}</span>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-gray-900">{donor.name}</h3>
-                        <span className="text-sm text-gray-500 capitalize">{donor.upazila}, {donor.district}</span>
-                      </div>
+                      <a href={`mailto:${donor.email}`} className="w-full bg-red-50 text-red-700 py-2 rounded-lg font-semibold hover:bg-red-100 transition block text-center truncate px-2">
+                        {donor.email}
+                      </a>
                     </div>
-                    <a href={`mailto:${donor.email}`} className="w-full bg-red-50 text-red-700 py-2 rounded-lg font-semibold hover:bg-red-100 transition block text-center truncate px-2">
-                      {donor.email}
-                    </a>
+                  ))}
+                </div>
+                {visibleCount < donors.length && (
+                  <div className="flex justify-center mb-12">
+                    <button
+                      onClick={() => setVisibleCount(prev => prev + 6)}
+                      className="bg-white text-red-700 border-2 border-red-700 px-8 py-3 rounded-lg font-bold hover:bg-red-50 transition"
+                    >
+                      View More
+                    </button>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             ) : hasSearched && !loading && donors.length === 0 ? (
               <div className="min-h-96 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50/50 flex flex-col items-center justify-center p-8 mb-8">
                 <div className="text-center">
@@ -223,14 +237,11 @@ export default function SearchDonors() {
           </div>
         </section>
 
-        {/* Why Use LifeFlow Section */}
         <section className="py-12 md:py-16 px-4 md:px-12 bg-gray-50">
           <div className="max-w-6xl mx-auto">
             <h2 className="text-4xl font-bold text-gray-900 text-center mb-12">Why use LifeFlow?</h2>
 
-            {/* Bento Grid */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 auto-rows-[250px]">
-              {/* Card 1 - Large Left (Verified Profiles) */}
               <div className="md:col-span-8 bg-white border border-gray-200 rounded-xl p-8 flex flex-col justify-between hover:shadow-lg transition">
                 <div>
                   <AlertCircle className="w-6 h-6 text-red-700 mb-4" />
@@ -245,14 +256,12 @@ export default function SearchDonors() {
                 </div>
               </div>
 
-              {/* Card 2 - Small Right (Emergency CTA) */}
               <div className="md:col-span-4 bg-red-700 text-white rounded-xl p-8 flex flex-col items-center justify-center text-center hover:shadow-lg transition">
                 <AlertCircle className="w-12 h-12 mb-4" />
                 <h3 className="text-2xl font-bold mb-2">Need Help Fast?</h3>
                 <p className="text-red-100 mb-6 text-sm">Post a public request if you can't find a direct donor match.</p>
               </div>
 
-              {/* Card 3 - Small Left (Live Alerts) */}
               <div className="md:col-span-4 bg-white border border-gray-200 rounded-xl p-8 flex flex-col justify-between hover:shadow-lg transition">
                 <div>
                   <Bell className="w-6 h-6 text-amber-600 mb-4" />
@@ -263,7 +272,6 @@ export default function SearchDonors() {
                 </div>
               </div>
 
-              {/* Card 4 - Large Right (Community Impact) */}
               <div className="md:col-span-8 bg-white border border-gray-200 rounded-xl p-8 flex items-center gap-6 hover:shadow-lg transition">
 
                 <div>

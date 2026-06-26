@@ -21,7 +21,6 @@ export function AdminSidebar() {
 
     return (
         <>
-            {/* Global Mobile Header */}
             <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 z-30">
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-red-700 rounded-lg flex items-center justify-center text-white">
@@ -37,7 +36,6 @@ export function AdminSidebar() {
                 </button>
             </div>
 
-            {/* Mobile Overlay */}
             {isOpen && (
                 <div
                     className="md:hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity"
@@ -56,7 +54,6 @@ export function AdminSidebar() {
                             <p className="text-xs text-gray-600">System Control</p>
                         </div>
                     </div>
-                    {/* Close button on mobile */}
                     <button onClick={() => setIsOpen(false)} className="md:hidden text-gray-400 hover:text-gray-600 p-1">
                         <X className="w-6 h-6" />
                     </button>
@@ -71,8 +68,8 @@ export function AdminSidebar() {
                                 href={item.href}
                                 onClick={() => setIsOpen(false)}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
-                                        ? 'bg-red-50 text-red-700 border-l-4 border-red-700 rounded-r-lg font-semibold'
-                                        : 'text-gray-700 hover:bg-gray-100'
+                                    ? 'bg-red-50 text-red-700 border-l-4 border-red-700 rounded-r-lg font-semibold'
+                                    : 'text-gray-700 hover:bg-gray-100'
                                     }`}
                             >
                                 <item.icon className="w-5 h-5" />

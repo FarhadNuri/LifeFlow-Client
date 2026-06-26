@@ -7,7 +7,6 @@ export async function POST(request) {
   try {
     const { name, email, password, bloodGroup, district, upazila, phone, image } = await request.json()
 
-    // Validate required fields
     if (!name || !email || !password) {
       return NextResponse.json(
         { error: 'Name, email, and password are required' },
@@ -15,7 +14,6 @@ export async function POST(request) {
       )
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
       return NextResponse.json(
@@ -24,7 +22,6 @@ export async function POST(request) {
       )
     }
 
-    // Validate password strength
     if (password.length < 6) {
       return NextResponse.json(
         { error: 'Password must be at least 6 characters long' },
@@ -32,12 +29,10 @@ export async function POST(request) {
       )
     }
 
-    // Connect to MongoDB
     const client = await clientPromise
     const db = client.db('lifeflow')
     const usersCollection = db.collection('users')
 
-    // Check if user already exists
     const existingUser = await usersCollection.findOne({ email: email.toLowerCase() })
     if (existingUser) {
       return NextResponse.json(
@@ -46,10 +41,8 @@ export async function POST(request) {
       )
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Create user object
     const newUser = {
       name,
       email: email.toLowerCase(),
@@ -64,12 +57,10 @@ export async function POST(request) {
       updatedAt: new Date()
     }
 
-    // Insert user into database
     const result = await usersCollection.insertOne(newUser)
 
-    // Create JWT token
     const token = jwt.sign(
-      { 
+      {
         userId: result.insertedId.toString(),
         name: newUser.name,
         email: newUser.email,
@@ -79,7 +70,6 @@ export async function POST(request) {
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     )
 
-    // Return user data (without password) and token
     const userResponse = {
       id: result.insertedId.toString(),
       name: newUser.name,
@@ -93,7 +83,7 @@ export async function POST(request) {
     }
 
     return NextResponse.json(
-      { 
+      {
         success: true,
         user: userResponse,
         token

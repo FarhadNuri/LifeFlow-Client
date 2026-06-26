@@ -110,14 +110,12 @@ export default function DonorProfilePage() {
 
   return (
     <div className="flex-1 overflow-auto mt-16 md:mt-0">
-      {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="px-4 md:px-8 py-4 md:py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <h1 className="text-2xl font-bold text-gray-900">Account Settings</h1>
         </div>
       </header>
 
-      {/* Content */}
       <div className="p-8">
         {error && (
           <div className="mb-8 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
@@ -125,17 +123,14 @@ export default function DonorProfilePage() {
           </div>
         )}
 
-        {/* Profile Card */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-8 mb-8">
           <div className="flex flex-col md:flex-row items-center md:items-start justify-between gap-6 text-center md:text-left">
             <div className="flex flex-col md:flex-row items-center md:items-start gap-6 w-full">
-              {/* Avatar */}
               <img
                 src={profile?.image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop"}
                 alt={name || "Donor"}
                 className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover shrink-0"
               />
-              {/* Info */}
               <div className="flex-1">
                 <div className="flex flex-col md:flex-row items-center md:items-start gap-3 mb-3">
                   <h2 className="text-2xl font-bold text-gray-900">{name || 'Loading...'}</h2>
@@ -157,10 +152,6 @@ export default function DonorProfilePage() {
           </div>
         </div>
 
-        {/* Stats Cards */}
-
-
-        {/* Personal Information Form */}
         <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-8 mb-24">
           <div className="flex items-center justify-between mb-6 md:mb-8 pb-4 border-b border-gray-200">
             <h3 className="text-lg font-bold text-gray-900">Personal Information</h3>
@@ -175,7 +166,6 @@ export default function DonorProfilePage() {
           </div>
 
           <div className="space-y-6 md:space-y-8">
-            {/* Row 1: Full Name and Email */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2 md:mb-3">Full Name</label>
@@ -199,7 +189,6 @@ export default function DonorProfilePage() {
               </div>
             </div>
 
-            {/* Row 2: Blood Group and Phone */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2 md:mb-3">Blood Group</label>
@@ -232,7 +221,6 @@ export default function DonorProfilePage() {
               </div>
             </div>
 
-            {/* Row 3: District and Upazila */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2 md:mb-3">District</label>
@@ -267,7 +255,6 @@ export default function DonorProfilePage() {
             </div>
           </div>
 
-          {/* Save Button */}
           {isEditing && (
             <div className="mt-6 md:mt-8 pt-6 md:pt-8 border-t border-gray-200 flex flex-col sm:flex-row justify-end gap-3 md:gap-4">
               <button
@@ -293,7 +280,6 @@ export default function DonorProfilePage() {
         </div>
       </div>
 
-      {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-24 right-4 md:right-8 bg-green-50 text-green-700 px-6 py-3 rounded-lg shadow-lg border border-green-200 z-[70] flex items-center gap-2 animate-in slide-in-from-top-2 duration-300">
           <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white shrink-0">✓</div>

@@ -73,10 +73,10 @@ export default function VolunteerProfilePage() {
   const handleSave = async () => {
     try {
       setIsSaving(true)
-      await new Promise(r => setTimeout(r, 1500)) // Artificial delay for loader
+      await new Promise(r => setTimeout(r, 1500))
       const token = localStorage.getItem('token')
       const userId = user?.id || user?.sub || user?._id
-      
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/volunteer/profile/${userId}`, {
         method: 'PATCH',
         headers: {
@@ -85,7 +85,7 @@ export default function VolunteerProfilePage() {
         },
         body: JSON.stringify({
           name,
-          bloodType: bloodGroup, // Keep backend naming if needed
+          bloodType: bloodGroup,
           phone,
           district,
           upazila
@@ -95,8 +95,7 @@ export default function VolunteerProfilePage() {
       if (response.ok) {
         setIsEditing(false)
         showToast('Profile updated successfully!')
-        // Update local profile state as well
-        setProfile(prev => ({...prev, name, bloodType: bloodGroup, phone, district, upazila}))
+        setProfile(prev => ({ ...prev, name, bloodType: bloodGroup, phone, district, upazila }))
       } else {
         setError('Failed to update profile')
       }
@@ -118,7 +117,6 @@ export default function VolunteerProfilePage() {
 
   return (
     <div className="flex-1 overflow-auto">
-      {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="px-8 py-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">Account Settings</h1>
@@ -126,7 +124,6 @@ export default function VolunteerProfilePage() {
         </div>
       </header>
 
-      {/* Content */}
       <div className="p-4 md:p-8">
         {error && (
           <div className="mb-8 p-4 bg-red-50 text-red-700 rounded-lg border border-red-200">
@@ -134,17 +131,14 @@ export default function VolunteerProfilePage() {
           </div>
         )}
 
-        {/* Profile Card */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8 mb-8">
           <div className="flex items-start justify-between">
             <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6 w-full text-center md:text-left">
-              {/* Avatar */}
               <img
                 src={profile?.image || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop"}
                 alt={name || "Volunteer"}
                 className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover shadow-sm"
               />
-              {/* Info */}
               <div className="flex flex-col items-center md:items-start">
                 <div className="flex flex-col md:flex-row items-center gap-2 md:gap-3 mb-2 md:mb-3">
                   <h2 className="text-xl md:text-2xl font-bold text-gray-900">{name || 'Loading...'}</h2>
@@ -166,14 +160,11 @@ export default function VolunteerProfilePage() {
           </div>
         </div>
 
-
-
-        {/* Personal Information Form */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
           <div className="flex items-center justify-between mb-6 md:mb-8 pb-4 border-b border-gray-200">
             <h3 className="text-lg font-bold text-gray-900">Personal Information</h3>
             {!isEditing && (
-              <button 
+              <button
                 onClick={() => setIsEditing(true)}
                 className="bg-red-50 text-red-700 px-3 md:px-4 py-2 rounded-lg font-semibold hover:bg-red-100 transition flex items-center gap-2 text-xs md:text-sm"
               >
@@ -183,7 +174,6 @@ export default function VolunteerProfilePage() {
           </div>
 
           <div className="space-y-6 md:space-y-8">
-            {/* Row 1: Full Name and Email */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-3">Full Name</label>
@@ -206,7 +196,6 @@ export default function VolunteerProfilePage() {
               </div>
             </div>
 
-            {/* Row 2: Blood Group and Phone */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-3">Blood Group</label>
@@ -239,48 +228,13 @@ export default function VolunteerProfilePage() {
               </div>
             </div>
 
-            {/* Row 3: District and Upazila */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-3">District</label>
-                <select
-                  value={district}
-                  onChange={(e) => setDistrict(e.target.value)}
-                  disabled={!isEditing}
-                  className={`w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent appearance-none text-gray-900 ${isEditing ? 'bg-white cursor-pointer' : 'bg-gray-50 cursor-not-allowed'}`}
-                >
-                  <option value="">Select</option>
-                  <option value="dhaka">Dhaka</option>
-                  <option value="chattogram">Chattogram</option>
-                  <option value="sylhet">Sylhet</option>
-                  <option value="rajshahi">Rajshahi</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-3">Upazila</label>
-                <select
-                  value={upazila}
-                  onChange={(e) => setUpazila(e.target.value)}
-                  disabled={!isEditing}
-                  className={`w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent appearance-none text-gray-900 ${isEditing ? 'bg-white cursor-pointer' : 'bg-gray-50 cursor-not-allowed'}`}
-                >
-                  <option value="">Select</option>
-                  <option value="gulshan">Gulshan</option>
-                  <option value="dhanmondi">Dhanmondi</option>
-                  <option value="uttara">Uttara</option>
-                  <option value="mirpur">Mirpur</option>
-                </select>
-              </div>
-            </div>
           </div>
 
-          {/* Save Button */}
           {isEditing && (
             <div className="mt-6 md:mt-8 pt-6 md:pt-8 border-t border-gray-200 flex flex-col sm:flex-row justify-end gap-3 md:gap-4">
-              <button 
+              <button
                 onClick={() => {
                   setIsEditing(false);
-                  // Optionally re-fetch profile here to reset fields if they cancel
                   fetchProfile();
                 }}
                 disabled={isSaving}
@@ -288,7 +242,7 @@ export default function VolunteerProfilePage() {
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={handleSave}
                 disabled={isSaving}
                 className="bg-red-700 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-800 transition flex items-center justify-center gap-2 disabled:opacity-70 w-full sm:w-auto"
@@ -300,8 +254,7 @@ export default function VolunteerProfilePage() {
           )}
         </div>
       </div>
-      
-      {/* Toast Notification */}
+
       {toastMessage && (
         <div className="fixed top-20 right-4 md:top-24 md:right-8 bg-green-50 text-green-700 px-6 py-3 rounded-lg shadow-lg border border-green-200 z-50 flex items-center gap-2 animate-in slide-in-from-top-2 duration-300">
           <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white shrink-0">✓</div>

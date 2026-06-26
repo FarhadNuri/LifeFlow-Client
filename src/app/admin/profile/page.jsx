@@ -22,9 +22,8 @@ export default function AdminProfilePage() {
     setIsSaving(true)
     setError('')
     try {
-      // Simulate network request since there might not be a dedicated admin edit endpoint yet
       await new Promise(r => setTimeout(r, 1500))
-      
+
       setIsEditing(false)
       showToast('Profile updated successfully!')
     } catch (err) {
@@ -70,7 +69,6 @@ export default function AdminProfilePage() {
 
   return (
     <div className="flex-1 overflow-auto bg-slate-50 min-h-screen mt-16 md:mt-0">
-      {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="px-8 py-6">
           <h1 className="text-2xl font-bold text-gray-900">Admin Profile</h1>
@@ -78,10 +76,8 @@ export default function AdminProfilePage() {
         </div>
       </header>
 
-      {/* Content */}
       <div className="p-4 md:p-8">
         <div className="max-w-3xl">
-          {/* Profile Card */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8 mb-8">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 text-center sm:text-left">
               <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center border-4 border-white shadow-sm">
@@ -103,7 +99,6 @@ export default function AdminProfilePage() {
             </div>
           </div>
 
-          {/* Account Details Form */}
           <div className="bg-white rounded-xl border border-gray-200 p-6 md:p-8">
             <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
               <h3 className="text-lg font-bold text-gray-900">Account Details</h3>
@@ -160,14 +155,14 @@ export default function AdminProfilePage() {
 
               {isEditing && (
                 <div className="pt-6 border-t border-gray-200 flex justify-end gap-3">
-                  <button 
+                  <button
                     onClick={() => setIsEditing(false)}
                     disabled={isSaving}
                     className="px-6 py-3 rounded-lg font-semibold text-gray-700 hover:bg-gray-100 transition disabled:opacity-50"
                   >
                     Cancel
                   </button>
-                  <button 
+                  <button
                     onClick={handleSave}
                     disabled={isSaving}
                     className="bg-red-700 text-white px-8 py-3 rounded-lg font-semibold hover:bg-red-800 transition w-full sm:w-auto flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
@@ -182,7 +177,6 @@ export default function AdminProfilePage() {
         </div>
       </div>
 
-      {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-24 right-4 md:right-8 bg-green-50 text-green-700 px-6 py-3 rounded-lg shadow-lg border border-green-200 z-[70] flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="w-2 h-2 rounded-full bg-green-500 shrink-0"></div>

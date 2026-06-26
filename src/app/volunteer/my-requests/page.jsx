@@ -4,14 +4,17 @@ import { useState, useEffect } from 'react';
 import { Heart, Share2, Plus, Search, Filter, Eye, Edit, Trash2, ArrowRight, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
+import { useLocationData } from '@/hooks/useLocationData';
 
 const VolunteerDashboard = () => {
   const { user } = useAuth();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterBloodGroup, setFilterBloodGroup] = useState('');
+  const [filterDivision, setFilterDivision] = useState('');
   const [filterDistrict, setFilterDistrict] = useState('');
   const [filterUpazila, setFilterUpazila] = useState('');
+  const { divisions, districts, upazilas } = useLocationData();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [viewModalData, setViewModalData] = useState(null);
   const [editModalData, setEditModalData] = useState(null);
@@ -29,7 +32,12 @@ const VolunteerDashboard = () => {
   const itemsPerPage = 3;
   const filteredRequests = requests.filter(req => {
     if (filterBloodGroup && req.bloodGroup !== filterBloodGroup) return false;
-    if (filterDistrict && req.district?.toLowerCase() !== filterDistrict.toLowerCase()) return false;
+    const loc = (req.district || req.location || '').toLowerCase();
+    if (filterDivision && !filterDistrict) {
+      const validDistricts = districts.filter(d => d.division_id === filterDivision).map(d => d.name.toLowerCase());
+      if (!validDistricts.includes(loc)) return false;
+    }
+    if (filterDistrict && loc !== filterDistrict.toLowerCase()) return false;
     if (filterUpazila && req.upazila?.toLowerCase() !== filterUpazila.toLowerCase()) return false;
     return true;
   });
@@ -40,7 +48,7 @@ const VolunteerDashboard = () => {
   const handleDelete = async (id) => {
     setIsDeleting(id);
     try {
-      await new Promise(r => setTimeout(r, 1000)); // Artificial delay for loader visibility
+      await new Promise(r => setTimeout(r, 1000));
       const token = localStorage.getItem('token');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/volunteer/requests/${id}`, {
         method: 'DELETE',
@@ -67,7 +75,7 @@ const VolunteerDashboard = () => {
     e.preventDefault();
     setIsEditing(true);
     try {
-      await new Promise(r => setTimeout(r, 1500)); // Artificial delay for loader visibility
+      await new Promise(r => setTimeout(r, 1500));
       const token = localStorage.getItem('token');
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/volunteer/requests/${editModalData._id}`, {
         method: 'PATCH',
@@ -121,13 +129,11 @@ const VolunteerDashboard = () => {
     fetchRequests();
   }, [user]);
 
-  // Helper to format initials
   const getInitials = (name) => {
     if (!name) return 'U';
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   };
 
-  // Helper for status colors
   const getStatusColor = (status) => {
     switch (status) {
       case 'Pending': return 'bg-amber-100 text-amber-700';
@@ -140,9 +146,7 @@ const VolunteerDashboard = () => {
 
   return (
     <main className="w-full">
-      {/* Main Grid */}
       <div className="p-6 md:p-8 max-w-7xl mx-auto">
-        {/* Header Section */}
         <header className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-8">
           <div>
             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-2">
@@ -160,9 +164,7 @@ const VolunteerDashboard = () => {
           </div>
         </header>
 
-        {/* Bento Grid Stats */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {/* Total Personal Requests Card */}
           <div className="md:col-span-2 bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">
               Total Personal Requests
@@ -183,9 +185,7 @@ const VolunteerDashboard = () => {
 
         </section>
 
-        {/* Recent Requests Section */}
         <section className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-          {/* Header */}
           <div className="px-6 py-4 border-b border-slate-200 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
             <h3 className="text-lg font-bold text-slate-900">Recent Requests</h3>
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
@@ -205,32 +205,53 @@ const VolunteerDashboard = () => {
                 <option value="AB-">AB-</option>
               </select>
               <select
-                value={filterDistrict}
-                onChange={(e) => setFilterDistrict(e.target.value)}
+                value={filterDivision}
+                onChange={(e) => {
+                  setFilterDivision(e.target.value);
+                  setFilterDistrict('');
+                  setFilterUpazila('');
+                  setCurrentPage(1);
+                }}
                 className="px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-red-700 outline-none text-slate-700 bg-white capitalize"
               >
+                <option value="">All Divisions</option>
+                {divisions.map(div => (
+                  <option key={div.id} value={div.id}>{div.name}</option>
+                ))}
+              </select>
+              <select
+                value={filterDistrict}
+                onChange={(e) => {
+                  setFilterDistrict(e.target.value);
+                  setFilterUpazila('');
+                  setCurrentPage(1);
+                }}
+                disabled={!filterDivision}
+                className="px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-red-700 outline-none text-slate-700 bg-white capitalize disabled:bg-slate-100 disabled:text-slate-400"
+              >
                 <option value="">All Districts</option>
-                <option value="dhaka">Dhaka</option>
-                <option value="chattogram">Chattogram</option>
-                <option value="sylhet">Sylhet</option>
-                <option value="rajshahi">Rajshahi</option>
+                {districts
+                  .filter(dist => dist.division_id === filterDivision)
+                  .map(dist => (
+                    <option key={dist.id} value={dist.name}>{dist.name}</option>
+                  ))}
               </select>
               <select
                 value={filterUpazila}
-                onChange={(e) => setFilterUpazila(e.target.value)}
-                className="px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-red-700 outline-none text-slate-700 bg-white capitalize"
+                onChange={(e) => { setFilterUpazila(e.target.value); setCurrentPage(1); }}
+                disabled={!filterDistrict}
+                className="px-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-red-700 outline-none text-slate-700 bg-white capitalize disabled:bg-slate-100 disabled:text-slate-400"
               >
                 <option value="">All Upazilas</option>
-                <option value="uttara">Uttara</option>
-                <option value="banani">Banani</option>
-                <option value="gulshan">Gulshan</option>
-                <option value="dhanmondi">Dhanmondi</option>
-                <option value="mirpur">Mirpur</option>
+                {upazilas
+                  .filter(upa => upa.district_id === districts.find(d => d.name === filterDistrict)?.id)
+                  .map(upa => (
+                    <option key={upa.id} value={upa.name}>{upa.name}</option>
+                  ))}
               </select>
             </div>
           </div>
 
-          {/* Table */}
           <div className="overflow-x-auto md:overflow-visible">
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-50 border-b border-slate-200">
@@ -266,10 +287,10 @@ const VolunteerDashboard = () => {
                       <td className="px-4 md:px-6 py-4">
                         <div className="flex items-center gap-3">
                           {user?.image ? (
-                            <img 
-                              src={user.image} 
-                              alt={request.volunteerName || 'User'} 
-                              className="w-10 h-10 rounded-full object-cover shrink-0" 
+                            <img
+                              src={user.image}
+                              alt={request.volunteerName || 'User'}
+                              className="w-10 h-10 rounded-full object-cover shrink-0"
                             />
                           ) : (
                             <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center font-bold text-red-700 text-xs shrink-0">
@@ -329,7 +350,6 @@ const VolunteerDashboard = () => {
             </table>
           </div>
 
-          {/* Pagination */}
           <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-center gap-2">
             <button
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -359,7 +379,6 @@ const VolunteerDashboard = () => {
           </div>
         </section>
 
-        {/* Footer */}
         <footer className="mt-8 py-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4 text-slate-600 border-t border-slate-200 text-xs md:text-sm">
           <p>
             © 2024 LifeFlow Blood Donation Platform. Saving lives through community.
@@ -378,7 +397,6 @@ const VolunteerDashboard = () => {
         </footer>
       </div>
 
-      {/* View Modal */}
       {viewModalData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-lg">
@@ -404,11 +422,11 @@ const VolunteerDashboard = () => {
               >
                 <Edit className="w-4 h-4" /> Edit
               </button>
-              <button 
+              <button
                 disabled={isDeleting === viewModalData._id}
                 onClick={async () => {
                   setDeleteConfirmId(viewModalData._id);
-                }} 
+                }}
                 className="px-4 py-2 bg-red-50 text-red-700 hover:bg-red-100 rounded-lg font-medium transition-colors flex items-center gap-2 disabled:opacity-50"
               >
                 {isDeleting === viewModalData._id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
@@ -420,7 +438,6 @@ const VolunteerDashboard = () => {
         </div>
       )}
 
-      {/* Edit Modal */}
       {editModalData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl max-w-lg w-full p-6 shadow-lg max-h-[90vh] overflow-y-auto">
@@ -464,7 +481,6 @@ const VolunteerDashboard = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
       {deleteConfirmId && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl max-w-sm w-full p-6 shadow-xl text-center">
@@ -476,14 +492,14 @@ const VolunteerDashboard = () => {
               Are you sure you want to delete this request? This action cannot be undone.
             </p>
             <div className="flex gap-3 justify-center">
-              <button 
+              <button
                 onClick={() => setDeleteConfirmId(null)}
                 disabled={isDeleting === deleteConfirmId}
                 className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={async () => {
                   const success = await handleDelete(deleteConfirmId);
                   if (success && viewModalData?._id === deleteConfirmId) {
@@ -501,7 +517,6 @@ const VolunteerDashboard = () => {
         </div>
       )}
 
-      {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-24 right-4 md:right-8 bg-green-50 text-green-700 px-6 py-3 rounded-lg shadow-lg border border-green-200 z-50 flex items-center gap-2 animate-in slide-in-from-top-2 duration-300">
           <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center text-white shrink-0">✓</div>

@@ -10,7 +10,6 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  // Check if user is logged in on mount
   useEffect(() => {
     checkAuth()
   }, [])
@@ -83,9 +82,6 @@ export function AuthProvider({ children }) {
         throw new Error(data.error || 'Registration failed')
       }
 
-      // Registration successful, but don't log them in automatically
-      // localStorage.setItem('token', data.token)
-      // setUser(data.user)
       return { success: true, user: data.user }
     } catch (error) {
       return { success: false, error: error.message }

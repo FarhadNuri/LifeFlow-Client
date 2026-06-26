@@ -70,9 +70,9 @@ export default function Funding() {
       const token = localStorage.getItem('token');
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/create-checkout-session`, {
         method: "POST",
-        headers: { 
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify({ amount: Number(amount) })
       })
@@ -90,11 +90,7 @@ export default function Funding() {
   }
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-
-      {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-12">
-        {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-12">
           <div>
             <h1 className="text-4xl font-bold text-gray-900 mb-2">Funding Initiatives</h1>
@@ -106,16 +102,13 @@ export default function Funding() {
           </button>
         </div>
 
-        {/* Stats Bento Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          {/* Total Funds Raised */}
           <div className="md:col-span-2 bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
             <p className="text-sm text-gray-600 mb-2">Total Funds Raised</p>
             <h2 className="text-5xl font-bold text-red-700 mb-4">{formattedTotalRaised}</h2>
 
           </div>
 
-          {/* Active Donors */}
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
             <p className="text-sm text-gray-600 mb-2">Active Donors</p>
             <p className="text-3xl font-bold text-gray-900 mb-4">{donors.length}</p>
@@ -130,7 +123,6 @@ export default function Funding() {
 
         </div>
 
-        {/* Recent Contributions Table */}
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
             <h3 className="text-lg font-bold text-gray-900">Recent Contributions</h3>
@@ -227,7 +219,6 @@ export default function Funding() {
         </div>
       )}
 
-      {/* Mobile Details Modal */}
       {selectedDonor && (
         <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-[100] md:hidden p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm relative shadow-2xl">

@@ -1,9 +1,9 @@
 'use client'
 
 import { MapPin, Calendar, Clock, Bookmark, ArrowRight, Heart, Filter, Plus, X, Loader2 } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense, useRef } from 'react'
 import { useAuth } from '@/context/AuthContext'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 const bloodTypeColors = {
   'A+': 'bg-red-700 text-white',
@@ -24,8 +24,20 @@ const statusTextColors = {
 }
 
 export default function ActiveRequests() {
-  const { user } = useAuth()
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen"><Loader2 className="w-8 h-8 animate-spin text-red-700" /></div>}>
+      <ActiveRequestsContent />
+    </Suspense>
+  )
+}
+
+function ActiveRequestsContent() {
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const urlRequestId = searchParams.get('requestId')
+  const hasAutoOpened = useRef(false)
+  
   const [requests, setRequests] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 6
@@ -99,6 +111,22 @@ export default function ActiveRequests() {
     fetchRequests()
   }, [])
 
+  useEffect(() => {
+    // If we have a requestId in URL, open the modal once requests are loaded and auth is done
+    if (!authLoading && urlRequestId && requests.length > 0 && !hasAutoOpened.current) {
+      if (!user) {
+        // Fallback: shouldn't happen normally because button redirects to login, but just in case
+        router.push('/login')
+      } else {
+        const req = requests.find(r => r._id === urlRequestId)
+        if (req) {
+          setSelectedRequest(req)
+          hasAutoOpened.current = true
+        }
+      }
+    }
+  }, [authLoading, user, urlRequestId, requests, router])
+
   const handleViewDetails = (request) => {
     if (!user) {
       router.push('/login')
@@ -119,7 +147,7 @@ export default function ActiveRequests() {
           'Authorization': `Bearer ${token}`
         }
       })
-      
+
       const data = await res.json()
       if (res.ok) {
         showToast('Donation request accepted! The requester will be notified.')
@@ -171,7 +199,7 @@ export default function ActiveRequests() {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Blood Group</label>
-                  <select 
+                  <select
                     value={filterBloodGroup}
                     onChange={(e) => { setFilterBloodGroup(e.target.value); setCurrentPage(1); }}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:border-transparent"
@@ -190,7 +218,7 @@ export default function ActiveRequests() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Division</label>
-                  <select 
+                  <select
                     value={filterDivision}
                     onChange={(e) => {
                       setFilterDivision(e.target.value);
@@ -209,7 +237,7 @@ export default function ActiveRequests() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">District</label>
-                  <select 
+                  <select
                     value={filterDistrict}
                     onChange={(e) => {
                       setFilterDistrict(e.target.value);
@@ -230,7 +258,7 @@ export default function ActiveRequests() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Upazila</label>
-                  <select 
+                  <select
                     value={filterUpazila}
                     onChange={(e) => { setFilterUpazila(e.target.value); setCurrentPage(1); }}
                     disabled={!filterDistrict}
@@ -288,7 +316,7 @@ export default function ActiveRequests() {
                     </div>
 
                     <div className="pt-4 border-t border-gray-200">
-                      <button 
+                      <button
                         onClick={() => handleViewDetails(request)}
                         className="w-full border-2 border-red-700 text-red-700 py-3 rounded-lg font-bold hover:bg-red-50 transition flex items-center justify-center gap-2"
                       >
@@ -328,9 +356,13 @@ export default function ActiveRequests() {
         <span className="absolute bottom-16 right-0 bg-amber-900 text-white px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap">Post Request</span>
       </button>
 
-      {/* Details Modal */}
       {selectedRequest && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setSelectedRequest(null);
+          }}
+        >
           <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-4 sm:p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
               <h2 className="text-xl font-bold text-gray-900">Request Details</h2>
@@ -338,7 +370,7 @@ export default function ActiveRequests() {
                 <X className="w-6 h-6" />
               </button>
             </div>
-            
+
             <div className="p-4 sm:p-6 overflow-y-auto grow">
               <div className="flex items-center gap-4 mb-6">
                 <div className={`w-16 h-16 ${bloodTypeColors[selectedRequest.bloodGroup] || 'bg-gray-100 text-gray-700'} rounded-full flex items-center justify-center font-bold text-2xl`}>
@@ -386,7 +418,7 @@ export default function ActiveRequests() {
             </div>
 
             <div className="p-4 sm:p-6 border-t border-gray-100 bg-white">
-              <button 
+              <button
                 onClick={() => handleDonate(selectedRequest._id)}
                 disabled={isDonating || toastMessage.includes('accepted')}
                 className="w-full bg-red-700 text-white py-4 rounded-xl font-bold text-lg hover:bg-red-800 transition shadow-xl shadow-red-900/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -410,7 +442,6 @@ export default function ActiveRequests() {
         </div>
       )}
 
-      {/* Toast Notification */}
       {toastMessage && toastMessage.includes('accepted') && (
         <div className="fixed top-24 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-xl flex items-center gap-3 z-50 animate-in fade-in slide-in-from-top-4">
           <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center shrink-0">

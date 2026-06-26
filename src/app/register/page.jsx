@@ -83,7 +83,6 @@ export default function Register() {
     const upazila = formData.get('upazila')
     const phone = formData.get('phone')
 
-    // Validate password
     const passError = validatePassword(password)
     if (passError) {
       setPasswordError(passError)
@@ -91,7 +90,6 @@ export default function Register() {
       return
     }
 
-    // Check if passwords match
     if (password !== confirmPassword) {
       setError('Passwords do not match')
       setIsSubmitting(false)
@@ -110,7 +108,7 @@ export default function Register() {
     })
 
     if (result.success) {
-      router.push('/login') // Redirect to login page after registration
+      router.push('/login')
     } else {
       setError(result.error || 'Registration failed. Please try again.')
       setIsSubmitting(false)
@@ -133,7 +131,6 @@ export default function Register() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-            {/* Avatar Upload */}
             <div className="flex flex-col items-center mb-6 sm:mb-8">
               <label htmlFor="avatar-upload" className="relative group cursor-pointer">
                 <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50 hover:border-red-700 hover:bg-red-50 transition-all group-hover:scale-105">
@@ -161,7 +158,6 @@ export default function Register() {
               <label className="text-xs sm:text-sm text-gray-600 mt-2 sm:mt-3">Upload Profile Picture</label>
             </div>
 
-            {/* Full Name */}
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">Full Name</label>
               <input
@@ -173,7 +169,6 @@ export default function Register() {
               />
             </div>
 
-            {/* Email Address and Mobile Number */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">Email Address</label>
@@ -197,7 +192,6 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Blood Group and District */}
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">Blood Group</label>
@@ -225,7 +219,7 @@ export default function Register() {
                   onChange={(e) => {
                     setSelectedDivision(e.target.value)
                     setSelectedDistrict('')
-                    setSelectedUpazila('') 
+                    setSelectedUpazila('')
                   }}
                   className="w-full h-10 sm:h-11 px-2 sm:px-4 rounded-lg border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-opacity-20 focus:border-red-700 transition-all text-sm text-gray-900"
                 >
@@ -239,7 +233,6 @@ export default function Register() {
               </div>
             </div>
 
-            {/* District and Upazila */}
             <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-3 sm:mt-4">
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">District</label>
@@ -293,7 +286,6 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Password */}
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">Password</label>
               <div className="relative">
@@ -317,7 +309,6 @@ export default function Register() {
               )}
             </div>
 
-            {/* Confirm Password */}
             <div>
               <label className="block text-sm font-medium text-gray-900 mb-2">Confirm Password</label>
               <div className="relative">
@@ -338,7 +329,6 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Register Button */}
             <button
               type="submit"
               disabled={isSubmitting}
@@ -357,7 +347,6 @@ export default function Register() {
               )}
             </button>
 
-            {/* Login Link */}
             <div className="text-center">
               <p className="text-xs sm:text-sm text-gray-600">
                 Already have an account?{' '}

@@ -10,7 +10,6 @@ export function ConditionalLayout({ children }) {
   const isDonorRoute = pathname?.startsWith('/donor')
   const isVolunteerRoute = pathname?.startsWith('/volunteer')
 
-  // Don't show Navbar/Footer on admin, donor, or volunteer routes
   if (isAdminRoute || isDonorRoute || isVolunteerRoute) {
     return <>{children}</>
   }

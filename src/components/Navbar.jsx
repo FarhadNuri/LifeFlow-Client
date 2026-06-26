@@ -33,7 +33,6 @@ export function Navbar() {
           <Link href="/" className="text-lg sm:text-xl font-bold text-red-700">LifeFlow</Link>
         </div>
 
-        {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-8">
           <Link
             href="/requests"
@@ -55,23 +54,23 @@ export function Navbar() {
           </Link>
           {user ? (
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                 className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center hover:bg-red-200 transition focus:outline-none focus:ring-2 focus:ring-red-700 focus:ring-offset-2"
               >
                 <User className="w-5 h-5 text-red-700" />
               </button>
-              
+
               {isProfileMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2 flex flex-col overflow-hidden">
-                  <Link 
+                  <Link
                     href={user.role === 'admin' ? '/admin' : user.role === 'volunteer' ? '/volunteer' : '/donor'}
                     onClick={() => setIsProfileMenuOpen(false)}
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-700 font-medium"
                   >
                     Dashboard
                   </Link>
-                  <button 
+                  <button
                     onClick={() => { setIsProfileMenuOpen(false); logout(); }}
                     className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-700 font-medium"
                   >
@@ -90,7 +89,6 @@ export function Navbar() {
           )}
         </nav>
 
-        {/* Mobile Hamburger Button */}
         <button
           onClick={toggleMenu}
           className="md:hidden p-2 text-gray-700 hover:text-red-700 transition"
@@ -100,7 +98,6 @@ export function Navbar() {
         </button>
       </div>
 
-      {/* Mobile Navigation Menu */}
       {isMenuOpen && (
         <nav className="md:hidden bg-white border-t border-gray-200 shadow-lg">
           <div className="flex flex-col py-4 px-4 space-y-4">

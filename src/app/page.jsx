@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Droplet, Users, Heart, AlertCircle, CheckCircle2, Shield, MessageCircle } from 'lucide-react'
+import RespondButton from '@/components/RespondButton'
 
 export default async function Home() {
   let activeRequests = [];
@@ -20,7 +21,6 @@ export default async function Home() {
           className="relative pt-32 pb-32 lg:pt-32 lg:pb-32 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: "url('/Hero3.png')" }}
         >
-          {/* Dark overlay for text readability */}
           <div className="absolute inset-0 bg-gray-900/60"></div>
 
           <div className="relative max-w-7xl mx-auto px-4 z-10 text-center lg:text-left">
@@ -86,7 +86,6 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* Active Requests Section */}
         <section className="max-w-7xl mx-auto px-4 py-12">
           <div className="flex items-center justify-between mb-8">
             <h2 className="text-3xl font-bold text-gray-900">Urgent Blood Requests</h2>
@@ -119,9 +118,7 @@ export default async function Home() {
                       <span>📅 {req.date}</span>
                       <span>⏰ {req.time}</span>
                     </div>
-                    <button className="w-full mt-auto bg-red-700 text-white py-2 rounded-lg font-medium hover:bg-red-800 transition">
-                      Respond Now
-                    </button>
+                    <RespondButton requestId={req._id} />
                   </div>
                 )
               })}

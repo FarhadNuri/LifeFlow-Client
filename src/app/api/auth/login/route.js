@@ -7,7 +7,6 @@ export async function POST(request) {
   try {
     const { email, password } = await request.json()
 
-    // Validate required fields
     if (!email || !password) {
       return NextResponse.json(
         { error: 'Email and password are required' },
@@ -15,14 +14,12 @@ export async function POST(request) {
       )
     }
 
-    // Connect to MongoDB
     const client = await clientPromise
     const db = client.db('lifeflow')
     const usersCollection = db.collection('users')
 
-    // Find user by email
     const user = await usersCollection.findOne({ email: email.toLowerCase() })
-    
+
     if (!user) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
@@ -30,9 +27,8 @@ export async function POST(request) {
       )
     }
 
-    // Verify password
     const isPasswordValid = await bcrypt.compare(password, user.password)
-    
+
     if (!isPasswordValid) {
       return NextResponse.json(
         { error: 'Invalid email or password' },
@@ -40,9 +36,8 @@ export async function POST(request) {
       )
     }
 
-    // Create JWT token
     const token = jwt.sign(
-      { 
+      {
         userId: user._id.toString(),
         name: user.name,
         email: user.email,
@@ -52,7 +47,6 @@ export async function POST(request) {
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     )
 
-    // Return user data (without password) and token
     const userResponse = {
       id: user._id.toString(),
       name: user.name,
@@ -64,7 +58,7 @@ export async function POST(request) {
     }
 
     return NextResponse.json(
-      { 
+      {
         success: true,
         user: userResponse,
         token

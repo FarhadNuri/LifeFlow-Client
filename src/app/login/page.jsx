@@ -24,7 +24,7 @@ export default function LoginPage() {
     const result = await login(email, password)
 
     if (result.success) {
-      router.push('/') // Redirect to home page
+      router.push('/')
     } else {
       setError(result.error || 'Login failed. Please try again.')
       setLoading(false)

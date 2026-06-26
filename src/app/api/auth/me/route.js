@@ -5,9 +5,8 @@ import { ObjectId } from 'mongodb'
 
 export async function GET(request) {
   try {
-    // Get token from Authorization header
     const authHeader = request.headers.get('authorization')
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
         { error: 'No token provided' },
@@ -17,7 +16,6 @@ export async function GET(request) {
 
     const token = authHeader.split(' ')[1]
 
-    // Verify token
     let decoded
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET)
@@ -28,14 +26,12 @@ export async function GET(request) {
       )
     }
 
-    // Connect to MongoDB
     const client = await clientPromise
     const db = client.db('lifeflow')
     const usersCollection = db.collection('users')
 
-    // Find user by ID
     const user = await usersCollection.findOne({ _id: new ObjectId(decoded.userId) })
-    
+
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
@@ -43,7 +39,6 @@ export async function GET(request) {
       )
     }
 
-    // Return user data (without password)
     const userResponse = {
       id: user._id.toString(),
       name: user.name,
@@ -55,7 +50,7 @@ export async function GET(request) {
     }
 
     return NextResponse.json(
-      { 
+      {
         success: true,
         user: userResponse
       },

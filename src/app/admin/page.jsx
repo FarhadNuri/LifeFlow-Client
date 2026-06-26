@@ -18,7 +18,7 @@ export default function AdminDashboard() {
       try {
         const token = localStorage.getItem('token')
         const headers = { 'Authorization': `Bearer ${token}` }
-        
+
         const [requestsRes, usersRes, donationsRes] = await Promise.all([
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/requests`, { headers }),
           fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users`, { headers }),
@@ -63,7 +63,6 @@ export default function AdminDashboard() {
 
   return (
     <main className="px-4 md:px-12 py-8 mt-16 md:mt-0">
-      {/* Header */}
       <div className="flex justify-between items-end mb-8">
         <div>
           <h2 className="text-3xl font-bold text-gray-900">Administrative Overview</h2>
@@ -71,9 +70,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {/* Total Donors */}
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -88,7 +85,6 @@ export default function AdminDashboard() {
           <p className="text-sm text-gray-600">Registered donors</p>
         </div>
 
-        {/* Total Funding */}
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
@@ -104,7 +100,6 @@ export default function AdminDashboard() {
           <p className="text-sm text-gray-600">Life-saving contributions raised</p>
         </div>
 
-        {/* Active Requests */}
         <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
@@ -120,7 +115,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Recent Requests Table */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
           <h3 className="text-lg font-bold text-gray-900">Recent Requests</h3>
@@ -200,7 +194,6 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* View Modal */}
       {viewModalData && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-lg animate-in fade-in zoom-in duration-200">
@@ -211,7 +204,7 @@ export default function AdminDashboard() {
               <p className="text-gray-900"><span className="font-semibold text-gray-700">Date:</span> {viewModalData.date}</p>
               <p className="text-gray-900"><span className="font-semibold text-gray-700">Time:</span> {viewModalData.time}</p>
               <p className="text-gray-900">
-                <span className="font-semibold text-gray-700">Status:</span> 
+                <span className="font-semibold text-gray-700">Status:</span>
                 <span className={`ml-2 px-3 py-1 rounded-md text-xs font-semibold ${getStatusColor(viewModalData.status)}`}>{viewModalData.status}</span>
               </p>
               <div>
